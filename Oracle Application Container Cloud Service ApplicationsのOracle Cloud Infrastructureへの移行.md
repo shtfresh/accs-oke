@@ -491,303 +491,303 @@ linux-packages.txtファイルを作成し、アプリケーションととも�
 
 プロジェクト・ディレクトリで、package-installer.shファイルを作成し、次のスクリプトの内容を貼り付けます:
 
-    ```
-    #Step 1: Check if the file linux-packages.txt exists at /u01/app
-    #Step 2: Iterate through the file linux-packages.txt, to verify package exists in our Oracle repo
-    #If step 2 success, then go ahead and install all packages. If step 2 fails, then exit with failure and display specify packages
-    
-    # The timeout function is called with 20m hard timeout, and within the stiplulated time if all the package are installed
-    # then return from function will be caught in parent process.
-    # An appropriate message displays back, depending on the return status.
-    # Return code for below scenarios:
-    # Syntax error: 2
-    # Validation failure : 3
-    # Success : 4
-    # Transaction error: 5
-    
-    #!/bin/bash
-    
-    timeout_value=20
-    
-    cust_loc=/u01/app
-    export cust_loc
-    cd $cust_loc
-    if [ ! -s $cust_loc/linux-packages.txt ] || [ ! -f $cust_loc/linux-packages.txt ]
-    then
-            exit 0
-    fi
-    
-    
-    export uuid=`date +%Y%m%d%H%M%S`
-    export LOG_NAME="/tmp/output_$uuid.log"
-    export PKG_LOGNAME="/tmp/pkgoutput_$uuid.log"
-    export GRP_LOGNAME="/tmp/grpoutput_$uuid.log"
-    export ERR_LOG_NAME="/tmp/error_$uuid.log"
-    rm -rf $LOG_NAME
-    
-    function cleanup()
-    {
-    /bin/rm -rf $PKG_LOGNAME
-    /bin/rm -rf $GRP_LOGNAME
-    /bin/rm -rf /tmp/tmp_log /tmp/tmp_syn /tmp/tmp_succ /tmp/tmp_val /tmp/tmp_err
-    }
-    
-    function install_packages()
-    {
-    cur_loc=`pwd`
-    ret_flag=0
-    syn_flag=0
-    sucpack_list=""
-    sucgroup_list=""
-    synpack_list=""
-    errpack_list=""
-    sucdisp_list=""
-    grpdisp_list=""
-    install_pkgs=""
-    failed_pkgs=""
-    
-    #Fix for file created in notepad++
-    sed -i -e '$a\' $cust_loc/linux-packages.txt
-    
-    echo "VALIDATION_CHECK_START" > $LOG_NAME
-    while read package_rec
-    do
-            if [[ "$package_rec" != "#"* ]] && [[ ! -z "$package_rec" ]]
-            then
-                    echo "Record Picked: $package_rec" >> $LOG_NAME
-                    package_name=`echo $package_rec | awk -F':' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'`
-                    install_type=`echo $package_rec | awk -F':' '{print $1}' | tr -d '[:space:]'`
-                    if [ "package_install" == "$install_type" ];then
-                            yum list $package_name 1>>$LOG_NAME 2>&1
-                            var=$?
-                            if [ $var -eq 1 ]
-                            then
-                                    if [[ -z "$errpack_list" ]];then
-                                            errpack_list=$package_name
-                                    else
-                                            errpack_list=$errpack_list","$package_name
-                                    fi
-                                    ret_flag=1
-                            elif [ $var -eq 0 ]
-                            then
-                                    if [[ -z "$sucdisp_list" ]];then
-                                            sucdisp_list=$package_name
-                                    else
-                                            sucdisp_list=$sucdisp_list","$package_name
-                                    fi
-                                    sucpack_list=$sucpack_list" "$package_name
-                            fi
-                    elif [ "group_install" == "$install_type" ];then
-                            yum grouplist "$package_name" 1>>$LOG_NAME 2>&1 1>/tmp/tmp_log
-                            cat /tmp/tmp_log | grep -E -iw -q "Available Groups|Installed Groups:"
-                            var=$?
-                            if [ $var -eq 1 ]
-                            then
-                                    if [[ -z "$errpack_list" ]];then
-                                            errpack_list=$package_name
-                                    else
-                                            errpack_list=$errpack_list","$package_name
-                                    fi
-                                    ret_flag=1
-                            elif [ $var -eq 0 ]
-                            then
-                                    if [[ -z "$grpdisp_list" ]];then
-                                            grpdisp_list=$package_name
-                                    else
-                                            grpdisp_list=$grpdisp_list","$package_name
-                                    fi
-                    if [[ -z "$sucgroup_list" ]];then
-                                            sucgroup_list=$package_name
-                                    else
-                                            sucgroup_list=$sucgroup_list","$package_name
-                                    fi
-                            fi
-                    else
-                #Syntax failure scenario if not properly provided
-                            if [[ -z "$synpack_list" ]];then
-                                            synpack_list=$package_rec
-                                    else
-                                            synpack_list=$synpack_list","$package_rec
-                            fi
-                ret_flag=-1
-                            syn_flag=1
-                    fi
-            fi
-    done < $cust_loc/linux-packages.txt
-    echo "VALIDATION_CHECK_END" >> $LOG_NAME
-    if [ $syn_flag -eq 1 ]
-    then
-            echo "Syntax Error: $synpack_list" > /tmp/tmp_syn
-            return 2
-    fi
-    
-    if [ $ret_flag -eq 1 ]
-    then
-            echo "Valid Packages: $sucdisp_list,$grpdisp_list"  > /tmp/tmp_val
-            echo "Invalid Packages: $errpack_list"          >> /tmp/tmp_val
-            return 3
-    fi
-    if [ $ret_flag -eq 0 ]
-    then
-            echo "INSTALL_START" >> $LOG_NAME
-            if [ ! -z "$sucpack_list" ];then
-                    yum -y install $sucpack_list 1>>$PKG_LOGNAME 2>&1
-                    resp=$?
-                    if [ $resp -eq 1 ];then
-                            /bin/rm -rf $PKG_LOGNAME
-                            ret_flag=2
-                            for pkg_name in $sucpack_list
-                            do
-                                    yum -y install $pkg_name 1>>$PKG_LOGNAME 2>/tmp/tmp_log
-                                    res=$?
-                                    if [ $res -eq 1 ];then
-                                            if [ -z "$failed_pkgs" ];then
-                                                    failed_pkgs=$pkg_name
-                                            else
-                                                    failed_pkgs=$failed_pkgs","$pkg_name
-                                            fi
-                        echo "Package Name: $pkg_name" >> $ERR_LOG_NAME
-                                            cat /tmp/tmp_log >> $ERR_LOG_NAME
-                                        cat /tmp/tmp_log >> $PKG_LOGNAME
-                                    elif [ $res -eq 0 ];then
-                                            if [ -z "$install_pkgs" ];then
-                                                    install_pkgs=$pkg_name
-                                            else
-                                                    install_pkgs=$install_pkgs","$pkg_name
-                                            fi
-                                    fi
-                            done
-                            cat $PKG_LOGNAME >> $LOG_NAME
-                    fi
-                    if [ $resp -eq 0 ]
-                    then
-                            cat $PKG_LOGNAME >> $LOG_NAME
-                            install_pkgs=$sucdisp_list
-                    fi
-            fi
-            if [ ! -z "$sucgroup_list" ];then
-                    yum -y groupinstall "$sucgroup_list" 1>>$GRP_LOGNAME 2>&1
-                    resp=$?
-                    if [ $resp -eq 1 ];then
-                            ret_flag=2
-                            /bin/rm -rf $GRP_LOGNAME
-                IFS=","
-                            for grp_name in $sucgroup_list
-                            do
-                                    yum -y groupinstall "$grp_name" 1>>$GRP_LOGNAME 2>/tmp/tmp_log
-                                    ret_res=$?
-                                    if [ $ret_res -eq 1 ];then
-                                            if [ -z "$failed_pkgs" ];then
-                                                    failed_pkgs=$grp_name
-                                            else
-                                                    failed_pkgs=$failed_pkgs","$grp_name
-                                            fi
-                                            echo "Group Name: $grp_name" >> $ERR_LOG_NAME
-                                            cat /tmp/tmp_log >> $ERR_LOG_NAME
-                                        cat /tmp/tmp_log >> $GRP_LOGNAME
-                                    elif [ $ret_res -eq 0 ];then
-                                            if [ -z "$install_pkgs" ];then
-                                                    install_pkgs=$grp_name
-                                            else
-                                                    install_pkgs=$install_pkgs","$grp_name
-                                            fi
-                                    fi
-                            done
-                            cat $GRP_LOGNAME >> $LOG_NAME
-                    fi
-                    if [ $resp -eq 0 ]
-                    then
-                            cat $GRP_LOGNAME >> $LOG_NAME
-                            if [ -z "$install_pkgs" ];then
-                                    install_pkgs=$sucgroup_list
+```
+#Step 1: Check if the file linux-packages.txt exists at /u01/app
+#Step 2: Iterate through the file linux-packages.txt, to verify package exists in our Oracle repo
+#If step 2 success, then go ahead and install all packages. If step 2 fails, then exit with failure and display specify packages
+
+# The timeout function is called with 20m hard timeout, and within the stiplulated time if all the package are installed
+# then return from function will be caught in parent process.
+# An appropriate message displays back, depending on the return status.
+# Return code for below scenarios:
+# Syntax error: 2
+# Validation failure : 3
+# Success : 4
+# Transaction error: 5
+
+#!/bin/bash
+
+timeout_value=20
+
+cust_loc=/u01/app
+export cust_loc
+cd $cust_loc
+if [ ! -s $cust_loc/linux-packages.txt ] || [ ! -f $cust_loc/linux-packages.txt ]
+then
+        exit 0
+fi
+
+
+export uuid=`date +%Y%m%d%H%M%S`
+export LOG_NAME="/tmp/output_$uuid.log"
+export PKG_LOGNAME="/tmp/pkgoutput_$uuid.log"
+export GRP_LOGNAME="/tmp/grpoutput_$uuid.log"
+export ERR_LOG_NAME="/tmp/error_$uuid.log"
+rm -rf $LOG_NAME
+
+function cleanup()
+{
+/bin/rm -rf $PKG_LOGNAME
+/bin/rm -rf $GRP_LOGNAME
+/bin/rm -rf /tmp/tmp_log /tmp/tmp_syn /tmp/tmp_succ /tmp/tmp_val /tmp/tmp_err
+}
+
+function install_packages()
+{
+cur_loc=`pwd`
+ret_flag=0
+syn_flag=0
+sucpack_list=""
+sucgroup_list=""
+synpack_list=""
+errpack_list=""
+sucdisp_list=""
+grpdisp_list=""
+install_pkgs=""
+failed_pkgs=""
+
+#Fix for file created in notepad++
+sed -i -e '$a\' $cust_loc/linux-packages.txt
+
+echo "VALIDATION_CHECK_START" > $LOG_NAME
+while read package_rec
+do
+        if [[ "$package_rec" != "#"* ]] && [[ ! -z "$package_rec" ]]
+        then
+                echo "Record Picked: $package_rec" >> $LOG_NAME
+                package_name=`echo $package_rec | awk -F':' '{print $2}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'`
+                install_type=`echo $package_rec | awk -F':' '{print $1}' | tr -d '[:space:]'`
+                if [ "package_install" == "$install_type" ];then
+                        yum list $package_name 1>>$LOG_NAME 2>&1
+                        var=$?
+                        if [ $var -eq 1 ]
+                        then
+                                if [[ -z "$errpack_list" ]];then
+                                        errpack_list=$package_name
+                                else
+                                        errpack_list=$errpack_list","$package_name
+                                fi
+                                ret_flag=1
+                        elif [ $var -eq 0 ]
+                        then
+                                if [[ -z "$sucdisp_list" ]];then
+                                        sucdisp_list=$package_name
+                                else
+                                        sucdisp_list=$sucdisp_list","$package_name
+                                fi
+                                sucpack_list=$sucpack_list" "$package_name
+                        fi
+                elif [ "group_install" == "$install_type" ];then
+                        yum grouplist "$package_name" 1>>$LOG_NAME 2>&1 1>/tmp/tmp_log
+                        cat /tmp/tmp_log | grep -E -iw -q "Available Groups|Installed Groups:"
+                        var=$?
+                        if [ $var -eq 1 ]
+                        then
+                                if [[ -z "$errpack_list" ]];then
+                                        errpack_list=$package_name
+                                else
+                                        errpack_list=$errpack_list","$package_name
+                                fi
+                                ret_flag=1
+                        elif [ $var -eq 0 ]
+                        then
+                                if [[ -z "$grpdisp_list" ]];then
+                                        grpdisp_list=$package_name
+                                else
+                                        grpdisp_list=$grpdisp_list","$package_name
+                                fi
+                if [[ -z "$sucgroup_list" ]];then
+                                        sucgroup_list=$package_name
+                                else
+                                        sucgroup_list=$sucgroup_list","$package_name
+                                fi
+                        fi
                 else
-                                    install_pkgs=$install_pkgs","$sucgroup_list
-                            fi
-                    fi
-            fi
-        echo "INSTALL_END" >> $LOG_NAME
-    fi
-    if [ -z "$failed_pkgs" ];then
-        ret_flag=0
-    fi
-    if [ $ret_flag -eq 0 ];then
-        echo "Installed Packages: $sucdisp_list,$grpdisp_list" > /tmp/tmp_succ
-        return 4
-    fi
-    if [ $ret_flag -eq 2 ];then
-        echo "Installable Packages: $install_pkgs"   > /tmp/tmp_err
-        echo "Failed Packages: $failed_pkgs"     >> /tmp/tmp_err
-        return 5
-    fi
-    
-    } 
-    #End of install_package function
-    
-    export -f install_packages
-    timeout "$timeout_value"m bash -c install_packages
-    rest_status=$?
-    
-    # Timeout scenario
-    if [ $rest_status -eq 124 ]
-    then
+            #Syntax failure scenario if not properly provided
+                        if [[ -z "$synpack_list" ]];then
+                                        synpack_list=$package_rec
+                                else
+                                        synpack_list=$synpack_list","$package_rec
+                        fi
+            ret_flag=-1
+                        syn_flag=1
+                fi
+        fi
+done < $cust_loc/linux-packages.txt
+echo "VALIDATION_CHECK_END" >> $LOG_NAME
+if [ $syn_flag -eq 1 ]
+then
+        echo "Syntax Error: $synpack_list" > /tmp/tmp_syn
+        return 2
+fi
+
+if [ $ret_flag -eq 1 ]
+then
+        echo "Valid Packages: $sucdisp_list,$grpdisp_list"  > /tmp/tmp_val
+        echo "Invalid Packages: $errpack_list"          >> /tmp/tmp_val
+        return 3
+fi
+if [ $ret_flag -eq 0 ]
+then
+        echo "INSTALL_START" >> $LOG_NAME
+        if [ ! -z "$sucpack_list" ];then
+                yum -y install $sucpack_list 1>>$PKG_LOGNAME 2>&1
+                resp=$?
+                if [ $resp -eq 1 ];then
+                        /bin/rm -rf $PKG_LOGNAME
+                        ret_flag=2
+                        for pkg_name in $sucpack_list
+                        do
+                                yum -y install $pkg_name 1>>$PKG_LOGNAME 2>/tmp/tmp_log
+                                res=$?
+                                if [ $res -eq 1 ];then
+                                        if [ -z "$failed_pkgs" ];then
+                                                failed_pkgs=$pkg_name
+                                        else
+                                                failed_pkgs=$failed_pkgs","$pkg_name
+                                        fi
+                    echo "Package Name: $pkg_name" >> $ERR_LOG_NAME
+                                        cat /tmp/tmp_log >> $ERR_LOG_NAME
+                                    cat /tmp/tmp_log >> $PKG_LOGNAME
+                                elif [ $res -eq 0 ];then
+                                        if [ -z "$install_pkgs" ];then
+                                                install_pkgs=$pkg_name
+                                        else
+                                                install_pkgs=$install_pkgs","$pkg_name
+                                        fi
+                                fi
+                        done
+                        cat $PKG_LOGNAME >> $LOG_NAME
+                fi
+                if [ $resp -eq 0 ]
+                then
+                        cat $PKG_LOGNAME >> $LOG_NAME
+                        install_pkgs=$sucdisp_list
+                fi
+        fi
+        if [ ! -z "$sucgroup_list" ];then
+                yum -y groupinstall "$sucgroup_list" 1>>$GRP_LOGNAME 2>&1
+                resp=$?
+                if [ $resp -eq 1 ];then
+                        ret_flag=2
+                        /bin/rm -rf $GRP_LOGNAME
+            IFS=","
+                        for grp_name in $sucgroup_list
+                        do
+                                yum -y groupinstall "$grp_name" 1>>$GRP_LOGNAME 2>/tmp/tmp_log
+                                ret_res=$?
+                                if [ $ret_res -eq 1 ];then
+                                        if [ -z "$failed_pkgs" ];then
+                                                failed_pkgs=$grp_name
+                                        else
+                                                failed_pkgs=$failed_pkgs","$grp_name
+                                        fi
+                                        echo "Group Name: $grp_name" >> $ERR_LOG_NAME
+                                        cat /tmp/tmp_log >> $ERR_LOG_NAME
+                                    cat /tmp/tmp_log >> $GRP_LOGNAME
+                                elif [ $ret_res -eq 0 ];then
+                                        if [ -z "$install_pkgs" ];then
+                                                install_pkgs=$grp_name
+                                        else
+                                                install_pkgs=$install_pkgs","$grp_name
+                                        fi
+                                fi
+                        done
+                        cat $GRP_LOGNAME >> $LOG_NAME
+                fi
+                if [ $resp -eq 0 ]
+                then
+                        cat $GRP_LOGNAME >> $LOG_NAME
+                        if [ -z "$install_pkgs" ];then
+                                install_pkgs=$sucgroup_list
+            else
+                                install_pkgs=$install_pkgs","$sucgroup_list
+                        fi
+                fi
+        fi
+    echo "INSTALL_END" >> $LOG_NAME
+fi
+if [ -z "$failed_pkgs" ];then
+    ret_flag=0
+fi
+if [ $ret_flag -eq 0 ];then
+    echo "Installed Packages: $sucdisp_list,$grpdisp_list" > /tmp/tmp_succ
+    return 4
+fi
+if [ $ret_flag -eq 2 ];then
+    echo "Installable Packages: $install_pkgs"   > /tmp/tmp_err
+    echo "Failed Packages: $failed_pkgs"     >> /tmp/tmp_err
+    return 5
+fi
+
+} 
+#End of install_package function
+
+export -f install_packages
+timeout "$timeout_value"m bash -c install_packages
+rest_status=$?
+
+# Timeout scenario
+if [ $rest_status -eq 124 ]
+then
+    echo "RESULT_START"
+    echo "SYNTAX_ERROR"
+    echo "Error Message : Timed out while installing & configuring linux packages/groups. Reduce the number of specified linux packages/groups."
+    echo "RESULT_END"
+    cleanup
+    exit 1
+fi
+
+# Syntax error scenario
+if [ $rest_status -eq 2 ]
+then
         echo "RESULT_START"
         echo "SYNTAX_ERROR"
-        echo "Error Message : Timed out while installing & configuring linux packages/groups. Reduce the number of specified linux packages/groups."
+    cat /tmp/tmp_syn
         echo "RESULT_END"
         cleanup
-        exit 1
-    fi
-    
-    # Syntax error scenario
-    if [ $rest_status -eq 2 ]
-    then
-            echo "RESULT_START"
-            echo "SYNTAX_ERROR"
-        cat /tmp/tmp_syn
-            echo "RESULT_END"
-            cleanup
-        exit 1
-    fi
-    
-    #Validation error scenario
-    if [ $rest_status -eq 3 ]
-    then
-            echo "RESULT_START"
-            echo "VALIDATION_FAILURE"
-        cat /tmp/tmp_val
-            echo "RESULT_END"
-            cat $LOG_NAME
-            cleanup
-        exit 1
-    fi
-    
-    #Success scenario
-    if [ $rest_status -eq 4 ]
-    then
+    exit 1
+fi
+
+#Validation error scenario
+if [ $rest_status -eq 3 ]
+then
         echo "RESULT_START"
-            echo "SUCCESS"
-        cat /tmp/tmp_succ
-            echo "RESULT_END"
-            cleanup
-            cat $LOG_NAME
-        exit 0
-    fi
-    
-    #Transaction error scenario
-    if [ $rest_status -eq 5 ]
-    then
-            echo "RESULT_START"
-            echo "ERROR_PACKAGE"
-        cat /tmp/tmp_err
-            echo "RESULT_END"
-            echo "ERROR_PKGS_START"
-            cat $ERR_LOG_NAME
-            echo "ERROR_PKGS_END"
-            cleanup
-            cat $LOG_NAME
-        exit 1
-    fi
-    ```
+        echo "VALIDATION_FAILURE"
+    cat /tmp/tmp_val
+        echo "RESULT_END"
+        cat $LOG_NAME
+        cleanup
+    exit 1
+fi
+
+#Success scenario
+if [ $rest_status -eq 4 ]
+then
+    echo "RESULT_START"
+        echo "SUCCESS"
+    cat /tmp/tmp_succ
+        echo "RESULT_END"
+        cleanup
+        cat $LOG_NAME
+    exit 0
+fi
+
+#Transaction error scenario
+if [ $rest_status -eq 5 ]
+then
+        echo "RESULT_START"
+        echo "ERROR_PACKAGE"
+    cat /tmp/tmp_err
+        echo "RESULT_END"
+        echo "ERROR_PKGS_START"
+        cat $ERR_LOG_NAME
+        echo "ERROR_PKGS_END"
+        cleanup
+        cat $LOG_NAME
+    exit 1
+fi
+```
 
 ### DockerイメージをOracle Cloud Infrastructureレジストリにプッシュ
 
