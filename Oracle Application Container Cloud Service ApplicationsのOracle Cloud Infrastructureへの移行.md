@@ -26,7 +26,8 @@ Oracle Cloud Infrastructure Classicのクラウド・リソースを移行する
 * クラウド・リソースを論理コンパートメントの階層に編成します。
 * 各コンパートメントのファイングレイン・アクセス・ポリシーを作成します。
 
-** 移行スコープについて
+---
+## 移行スコープについて
 
 Oracle Application Container Cloud ServiceアプリケーションをOracle Cloud Infrastructure Container Engine for Kubernetesに移行する前に、このプロセスのスコープと制約を考慮します。
 
@@ -77,7 +78,6 @@ Oracle Cloud InfrastructureのIdentity and Access Management (IAM)システム�
 ポリシーとは、会社が所有するOracle Cloud Infrastructureリソースにアクセスできるユーザーとその方法を指定するドキュメントです。 Oracle Application Container Cloud ServiceアプリケーションをOracle Cloud Infrastructureに移行するには、Oracle Cloud Infrastructure Container Engine for KubernetesクラスタおよびOracle Cloud Infrastructureレジストリリポジトリで操作を実行するために必要なポリシーを定義する必要があります。 [クラスタの作成およびデプロイメントのポリシー構成](https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengpolicyconfig.htm)と[リポジトリ・アクセスを制御するポリシー](https://docs.cloud.oracle.com/iaas/Content/Registry/Concepts/registrypolicyrepoaccess.htm)を参照してください。
 
 ---
-
 ## 移行タスク・フローについて
 
 既存のOracle Application Container Cloud ServiceアプリケーションをOracle Cloud Infrastructure Container Engine for Kubernetesに移行するプロセスを理解します。
@@ -164,13 +164,13 @@ Oracle Cloud Infrastructure Classic上のサービス・インスタンスに現
 * アプリケーションの手動移行
 * Kubernetes Clusterからのアプリケーション・ログの取得
 * 移行問題のトラブルシューティング
----
 
+---
 ## スクリプト・ツールを使用したアプリケーションの移行
 
 ### TODO
----
 
+---
 ## アプリケーションの手動移行
 
 Oracle Application Container Cloud Serviceアプリケーションに基づいてDockerイメージを作成し、Oracle Cloud Infrastructure Container Engine for Kubernetesにデプロイします。
@@ -240,7 +240,6 @@ kubectlを使用してクラスタにアクセスできるように、kubeconfig
     NAME                   TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)         AGE
     kubernetes             ClusterIP      10.96.0.1       <none>          443/TCP         12d
     ```
-<div align="center"><img src=".\images\Migrate.Your.Applications.Manually\02.Configure.Kubectl.23.png" width=80%></div>
 
 ### Dockerイメージのビルド
 Dockerイメージをビルドするには、Dockerfileにそのイメージを組み立てる命令が含まれている必要があります。 アプリケーション・ランタイムに基づいて、テンプレートを使用してDockerfileを作成できます。
@@ -824,7 +823,7 @@ DockerイメージをOCIRにプッシュする前に、幾つのか準備が必�
     ご自身の環境に合わせて、下表から適切なリージョンコードを見つけてください。
 
     リージョン | リージョンコード
-    ------|---------
+    -|-
     ap-tokyo-1 | nrt
     us-ashburn-1 | iad
     us-phoenix-1 | phx
@@ -999,7 +998,7 @@ Java Enterprise Edition (Java EE)アプリケーションにシステムまた�
     <ocic-service-type>_PROPERTIES=jndi-name:<jndi-name>|max-capacity:<max-capacity>|min-capacity:<min-capacity>|driver-properties:<driver-properties>
     ```
     プレースホルダー        | 説明
-    ----------------------|---
+    -|-
     `<ocic-service-type>` | たとえば、サービス・タイプ: DBAAS, MYSQLCS, etc.
     `<service-name>`      | サービスの名前。
     `<jndi-name>`         | サービスのJNDI名。 たとえば、"`jdbc/<value>`"という形式にする必要があります: "jdbc/dbcs"。  
@@ -1116,7 +1115,7 @@ Oracle Cloud Infrastructure Container Engine for Kubernetesにアプリケーシ
 3. 変数に適切な値を指定します:
 
     プレースホルダー | 説明
-    ---------|---
+    -|-
     ${replicas} | アプリケーション・レプリカの数を指定します。 このプロパティが欠落している場合、デフォルト値は2です。
     ${command} | アプリケーションの起動に使用するオペレーティング・システム・コマンドを指定します。 <ul><li>manifest.jsonファイル内のcommandプロパティの最初のワードを入力します。 たとえば、コマンド・プロパティの値が: "sh bin/startapp.sh -config conf/app.properties"の場合、${command}値はshです。</li><li> manifest.jsonファイルにこのプロパティが存在しない場合は、値を空のcmd: []のままにします。</li></ul>
     ${args} | アプリケーションの起動に使用する引数を指定します。<ul><li>manifest.jsonファイル内のcommandプロパティの2番目の単語から始まるすべての単語のカンマ区切りのリストを入力します。 たとえば、manifest.jsonファイル内のcommandプロパティの値が"sh bin/startapp.sh -config conf/app.properties"の場合、${args}値は"bin/startapp.sh", "-config", "conf/app.properties"になります。</li><li>このプロパティが欠落している場合は、値を空のままにします。 たとえば、args: [].</li></ul>
@@ -1341,8 +1340,6 @@ DNSゾーンを作成したら、DNSレコードを追加して、サブドメ�
 3. 「変更の公開」をクリックします。
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.07.png" width=80%></div>
 4. アプリケーションのカスタムURLは、次のフォームを備えています: `http[s]://<name>.<zone-name>[:<port>]/`。 たとえば、レコードの名前にwebapp01を入力し、ゾーン名がexample.comの場合、HTTPS URLは<https://webapp01.example.com>になります。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.08.png" width=80%></div>
-
 
 ### イングレス・コントローラを設置
 アプリケーションに対して、HTTPをHTTPSにリダイレクト、ロード・バランサまたはセッション・スティッキーにカスタマイズする場合は、Nginxイングレス・コントローラを設定する必要があります。 イングレス・コントローラは、外部ロード・バランサとアプリケーション間のトラフィックを処理します。
@@ -1611,7 +1608,7 @@ cluster-adminロールを作成し、Oracle Cloud Infrastructure管理者ユー�
     default-http-backend   ClusterIP   10.96.189.119   <none>        80/TCP    36s
     ```
 
-デプロイメントの完了には数分かかる場合があります。
+    デプロイメントの完了には数分かかる場合があります。
 
 #### イングレス・コントローラを作成
 Nginxイングレス・コントローラ用のKubernetesデプロイメントとサービスを作成します。
@@ -1691,7 +1688,6 @@ Nginxイングレス・コントローラ用のKubernetesデプロイメント�
     Waiting for deployment "nginx-ingress-controller" rollout to finish: 0 of 1 updated replicas are available...
     deployment "nginx-ingress-controller" successfully rolled out
     ```
-
     デプロイ・チェックの完了には数分かかる場合があります。
 
 **イングレス・コントローラ・サービスを作成**
@@ -1791,11 +1787,14 @@ Nginxイングレス・コントローラ用のKubernetesデプロイメント�
     ```
     kubectl create -f <path-to-kubernetes-service-yaml>
     ```
+
     >注意：アプリケーションのデプロイで既に同じ名前のServiceを作成した場合、事前に削除してください。
+
     ```
     [root@accs-migration-poc-vm accs2oke]# kubectl delete -f service.yaml 
     service "notice-service" deleted
     ```
+
     例:
     ```
     [root@accs-migration-poc-vm accs2oke]# kubectl create -f service.yaml 
@@ -2129,6 +2128,7 @@ Oracle Cloud Infrastructure ClassicからOracle Cloud InfrastructureへOracle Ap
 * 移行されたアプリケーションのテスト
 * Oracle Cloud Infrastructure ClassicでのInfrastructure and Platformリソースのクリーンアップ
 
+---
 ## 移行されたアプリケーションのテスト
 アプリケーションをテストするには、アプリケーションのロード・バランサの外部IPアドレスまたはカスタムURL(構成されている場合)を使用します。 コマンドライン・ツールまたはwebブラウザを使用して、アプリケーションとの間でデータを転送できます。
 
@@ -2156,7 +2156,8 @@ Oracle Cloud Infrastructure ClassicからOracle Cloud InfrastructureへOracle Ap
 
 <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\14.Use.a.web.browser.png" width=80%></div>
 
-#### Oracle Cloud Infrastructure ClassicでのInfrastructure and Platformリソースのクリーンアップ
+---
+## Oracle Cloud Infrastructure ClassicでのInfrastructure and Platformリソースのクリーンアップ
 Oracle Cloud Infrastructureで移行したアプリケーションをテストした後、Oracle Cloud Infrastructure Classicでアプリケーションおよびサポートするクラウド・リソースを削除できます。
 
 使用しなくなったサービスのコストを避けるには、これらのOracle Cloud Infrastructure Classicリソースを削除します。
