@@ -158,7 +158,7 @@ Oracle Cloud Infrastructure Classic上のサービス・インスタンスに現
 
 * 手動: 移行プロセスのステップを追って説明します。 このメソッドを使用すると、Oracle Cloud Infrastructure Container Engine for Kubernetesでのアプリケーションのデプロイに必要なリソースをより適切に把握できます。
 
-トピックス:
+**トピックス:**
 
 * スクリプト・ツールを使用したアプリケーションの移行
 * アプリケーションの手動移行
@@ -175,7 +175,7 @@ Oracle Cloud Infrastructure Classic上のサービス・インスタンスに現
 
 Oracle Application Container Cloud Serviceアプリケーションに基づいてDockerイメージを作成し、Oracle Cloud Infrastructure Container Engine for Kubernetesにデプロイします。
 
-トピックス:
+**トピックス:**
 
 * Kubernetesクラスタを作成
 * Kubectlの構成
@@ -199,6 +199,7 @@ Oracle Application Container Cloud ServiceアプリケーションをOracle Clou
 * クラスタが使用するVirtual Cloud Network (VCN)には、リモート・アクセスを可能にするためにインターネット・ゲートウェイが含まれている必要があります。
 * クラスタ内のロード・バランシング(LB)サブネットには、インターネットからポート80または443 (SSLが有効な場合)上のサブネットに受信トラフィックを許可するイングレス・セキュリティ・ルールが必要です。
 * クラスタ内のノードのシェイプと数量は、このクラスタに移行するすべてのアプリケーションのCPUとメモリーの容量要件を満たすほど十分に大きくする必要があります。
+
 Oracle Cloud Infrastructureコンソールを使用して、新しいKubernetesクラスタを作成できます。 マスター・ノードにインストールするクラスタ名やKubernetesバージョンなどの詳細を指定する必要があります。
 
 **[OKEクラスターのプロビジョニング](https://oracle-japan.github.io/paasdocs/documents/containers/handson/getting-started-automated/#2-oke)もご参照ください。**
@@ -215,7 +216,8 @@ Oracle Cloud Infrastructureコンソールを使用して、新しいKubernetes�
    * クイック作成: 選択済
    * シェイプ:ノード・プールの各ノードに使用するシェイプを選択します。 このシェイプによって、CPUの数と各ノードに割り当てられるメモリー量が決まります。
    * サブネットごとの数量:各サブネット内のノード・プールに作成するワーカー・ノードの数を入力します。
-   * 公開SSHキー: (オプション)ノード・プールの各ノードへのSSHアクセスに使用するキー・ペアの公開キーを入力します。 公開キーは、クラスタ内のすべてのワーカー・ノードにインストールされます。 公開SSHキーを指定しない場合は、Oracle Cloud Infrastructure Container Engine for Kubernetesによって提供されます。 ただし、対応する秘密キーがないため、ワーカー・ノードへのSSHアクセス権を持つことはできません
+   * 公開SSHキー: (オプション)ノード・プールの各ノードへのSSHアクセスに使用するキー・ペアの公開キーを入力します。 公開キーは、クラスタ内のすべてのワーカー・ノードにインストールされます。 公開SSHキーを指定しない場合は、Oracle Cloud Infrastructure Container Engine for Kubernetesによって提供されます。 ただし、対応する秘密キーがないため、ワーカー・ノードへのSSHアクセス権を持つことはできません。
+
 4. 作成をクリックします。
 <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\01.Create.a.Kubernetes.Cluster.03.png" width=80%></div>
 <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\01.Create.a.Kubernetes.Cluster.04.png" width=80%></div>
@@ -269,7 +271,8 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     例のランタイム・バージョンは8です
 
 4. プロジェクト・ディレクトリで、Dockerfileを作成し、実行時にそのテンプレートを使用します:
-* **Java:**
+
+    **Java:**
     ```
     FROM iad.ocir.io/psmsvc3/accs/java<runtime-version>:latest
     ENV APP_HOME=/u01/app
@@ -283,7 +286,7 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     USER apaas
     ```
 
-* **Node:**
+    **Node:**
     ```
     FROM iad.ocir.io/psmsvc3/accs/node<runtime-version>:latest
     ENV APP_HOME=/u01/app
@@ -297,7 +300,7 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     USER apaas
     ```
 
-* **Java EE:**
+    **Java EE:**
     ```
     FROM iad.ocir.io/psmsvc3/accs/javaee<runtime-version>:latest
     ENV APP_HOME=/u01/app
@@ -311,7 +314,7 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     USER apaas
     ENTRYPOINT ["sh", "-c", "$SCRIPT_HOME/post-install.sh && $DOMAIN_HOME/startServer.sh"]
     ```
-* **PHP:**
+    **PHP:**
     ```
     FROM iad.ocir.io/psmsvc3/accs/php<runtime-version>:latest
     ENV APP_HOME=/u01/app
@@ -325,7 +328,7 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     USER apaas
     ENTRYPOINT ["sh", "-c", "apache2-run"]
     ```
-* **DotNet:**
+    **DotNet:**
     ```
     FROM microsoft/dotnet:<runtime-version>-runtime
     ENV APP_HOME=/u01/app
@@ -342,7 +345,7 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     && chgrp -hR builds /usr/local
     USER apaas
     ```
-* **Ruby:**
+    **Ruby:**
     ```
     FROM ruby:<runtime-version>
     ENV APP_HOME=/u01/app
@@ -359,7 +362,7 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     && chgrp -hR builds /usr/local
     USER apaas
     ```
-* **Python:**
+    **Python:**
     ```
     FROM python:<runtime-version>
     ENV APP_HOME=/u01/app
@@ -376,7 +379,7 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     && chgrp -hR builds /usr/local
     USER apaas
     ```
-* **Go:**
+    **Go:**
     ```
     FROM golang:<runtime-version>
     ENV APP_HOME=/u01/app
@@ -415,6 +418,7 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     ```
     sudo docker build -t <local-image-name>:latest 
     ```
+    
     >注意: ローカル・イメージの複数のバージョンを保守する場合、最新ではなく適切なタグを使用できます。  
     
     例:
@@ -2123,7 +2127,7 @@ TYPE列の下の値は、アプリケーションに従ってClusterIPまたはL
 # 4. 移行後のタスクの完了
 Oracle Cloud Infrastructure ClassicからOracle Cloud InfrastructureへOracle Application Container Cloud Serviceアプリケーションを正常に移行した後、アプリケーションを完全にテストし、クリーンアップなどのオプションの構成タスクを実行します。
 
-トピックス:
+**トピックス:**
 
 * 移行されたアプリケーションのテスト
 * Oracle Cloud Infrastructure ClassicでのInfrastructure and Platformリソースのクリーンアップ
