@@ -826,19 +826,19 @@ DockerイメージをOCIRにプッシュする前に、幾つのか準備が必�
     
     ご自身の環境に合わせて、下表から適切なリージョンコードを見つけてください。
 
-    リージョン | リージョンコード
-    ---------|---
-    ap-tokyo-1 | nrt
-    us-ashburn-1 | iad
-    us-phoenix-1 | phx
-    ap-mumbai-1 | bom
-    ap-seoul-1 | icn
-    ap-sydney-1 | syd
-    ca-toronto-1 | yyz
-    eu-frankfurt-1 | fra
-    eu-zurich-1 | zrh
-    sa-saopaulo-1 | gru
-    uk-london-1 | lhr
+リージョン | リージョンコード
+---------|---
+ap-tokyo-1 | nrt
+us-ashburn-1 | iad
+us-phoenix-1 | phx
+ap-mumbai-1 | bom
+ap-seoul-1 | icn
+ap-sydney-1 | syd
+ca-toronto-1 | yyz
+eu-frankfurt-1 | fra
+eu-zurich-1 | zrh
+sa-saopaulo-1 | gru
+uk-london-1 | lhr
 
 6. OCIRにログインするためにオブジェクト・ストレージ・ネームスペースを確認します。
 
