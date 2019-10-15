@@ -418,10 +418,10 @@ Dockerイメージをビルドするには、Dockerfileにそのイメージを�
     ```
     sudo docker build -t <local-image-name>:latest 
     ```
-    
+
     >注意: ローカル・イメージの複数のバージョンを保守する場合、最新ではなく適切なタグを使用できます。  
     
-    例:
+    例:  
     ```
     [root@accs-migration-poc-vm accs2oke]# cd $HOME/accs2oke
     [root@accs-migration-poc-vm accs2oke]# sudo docker build -t notice-image:latest .
@@ -827,7 +827,7 @@ DockerイメージをOCIRにプッシュする前に、幾つのか準備が必�
     ご自身の環境に合わせて、下表から適切なリージョンコードを見つけてください。
 
     リージョン | リージョンコード
-    -|-
+    ---------|---
     ap-tokyo-1 | nrt
     us-ashburn-1 | iad
     us-phoenix-1 | phx
@@ -1001,14 +1001,16 @@ Java Enterprise Edition (Java EE)アプリケーションにシステムまた�
     <ocic-service-type>_SERVICE_BINDING_NAME=<service-name>
     <ocic-service-type>_PROPERTIES=jndi-name:<jndi-name>|max-capacity:<max-capacity>|min-capacity:<min-capacity>|driver-properties:<driver-properties>
     ```
-    プレースホルダー        | 説明
-    -|-
+
+    プレースホルダー | 説明
+    ---------|---
     `<ocic-service-type>` | たとえば、サービス・タイプ: DBAAS, MYSQLCS, etc.
     `<service-name>`      | サービスの名前。
     `<jndi-name>`         | サービスのJNDI名。 たとえば、"`jdbc/<value>`"という形式にする必要があります: "jdbc/dbcs"。  
     `<max-capacity>`      | 接続プールの最大容量。
     `<min-capacity>`      | 接続プールの最小容量。
     `<driver-properties>` | JDBCドライバ・プロパティのセミコロン区切りのリスト。
+
     例:
     ```
     # ACCS environment variables(DO NOT REMOVE)
@@ -1119,7 +1121,7 @@ Oracle Cloud Infrastructure Container Engine for Kubernetesにアプリケーシ
 3. 変数に適切な値を指定します:
 
     プレースホルダー | 説明
-    -|-
+    ---------|---
     ${replicas} | アプリケーション・レプリカの数を指定します。 このプロパティが欠落している場合、デフォルト値は2です。
     ${command} | アプリケーションの起動に使用するオペレーティング・システム・コマンドを指定します。 <ul><li>manifest.jsonファイル内のcommandプロパティの最初のワードを入力します。 たとえば、コマンド・プロパティの値が: "sh bin/startapp.sh -config conf/app.properties"の場合、${command}値はshです。</li><li> manifest.jsonファイルにこのプロパティが存在しない場合は、値を空のcmd: []のままにします。</li></ul>
     ${args} | アプリケーションの起動に使用する引数を指定します。<ul><li>manifest.jsonファイル内のcommandプロパティの2番目の単語から始まるすべての単語のカンマ区切りのリストを入力します。 たとえば、manifest.jsonファイル内のcommandプロパティの値が"sh bin/startapp.sh -config conf/app.properties"の場合、${args}値は"bin/startapp.sh", "-config", "conf/app.properties"になります。</li><li>このプロパティが欠落している場合は、値を空のままにします。 たとえば、args: [].</li></ul>
