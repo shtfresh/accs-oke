@@ -1,0 +1,144 @@
+問題①
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+◆現象
+2019-10-16 09:54:11,778 root INFO Fetching OCI details....
+ServiceError:
+{
+    "code": "NotAuthorizedOrNotFound", 
+    "message": "Authorization failed or requested resource not found", 
+    "opc-request-id": "93A1AB2F6CEF4ABEBE3AC0CF7AC6E64E/CF5CE1A93746684B9AB10C8B8093F02D/22DB7B2BA6A1D9AA855FF6653270CAD2", 
+    "status": 404
+}
+2019-10-16 09:54:15,741 root INFO Fetch info from OCI failed. Exiting. 
+Cause: Error in fetching tenancy details from OCI: Command '['oci', 'iam', 'compartment', 'get', '--compartment-id', 'ocid1.tenancy.oc1..aaaaaaaaro7aox2fclu4urtpgsbacnrmjv46e7n4fw3sc2wbq24l7dzf3kba', '--config-file', u'/root/.oci/config', '--profile', u'DEFAULT']' returned non-zero exit status 1
+2019-10-16 09:54:15,741 root INFO If the issue persists, contact Oracle support.
+
+◆原因
+oci_info.py：51行目
+
+    getTenantDetailCommand = ["oci", "iam", "compartment", "get", "--compartment-id",
+                              tenancyOCID, "--config-file", configLocation, "--profile", profile]
+
+OCI管理者の権限が必要
+
+◆対策
+OCI管理者権限付与。（ALLOW GROUP Administrators to manage all-resources IN TENANCY）
+
+問題②
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+2019-10-16 10:11:00,700 root INFO Cluster creation failed. VCN creation failed, cause: ServiceError:
+{
+    "code": "InvalidParameter", 
+    "message": "dnsLabel size must be between 1 and 15", 
+    "opc-request-id": "3E5EEF42B3744F3CB4660BC3BAE2E39F/0307EC4373F75730B86B49F4B47FE98E/0871591459DA539132FFCCBD460936CE", 
+    "status": 400
+}
+
+2019-10-16 10:11:00,700 root INFO If the issue persists, contact Oracle support.
+
+◆原因
+oke.py：224行目
+VCN作成コマンドにcluster名をそのまま（短縮化しないまま）dns-labelに渡した。（OCI Consoleの場合、自動的に15文字まで短縮化している）
+
+        name_nospace = str(cluster_name.replace(" ", ""))
+        display_name = "oke-vcn-" + name_nospace + \
+            "-" + time.strftime("%Y%m%d%H%M%S")
+        logger.log_it("Creating VCN...")
+        command = ["oci", "network", "vcn", "create", "--cidr-block", cidr_block_vcn, "-c", compartment_id,
+                   "--dns-label", name_nospace, "--display-name", display_name,
+                   "--config-file="+_input['OCIConfigLocation'], "--profile="+_input['OCIConfigProfile']]
+◆対策
+config.jsonの中に、cluster名を15文字以内に設定する。
+
+
+問題③
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+2019-10-17 09:22:37,908 root INFO Cluster creation failed. Error occurred while creating subnets (Maximum number of loadbalancer subnets that can be created is 1)
+2019-10-17 09:22:37,909 root INFO If the issue persists, contact Oracle support.
+
+
+◆原因
+oke.py：340行目
+lb_subnets_count（cluster_default_inputs.jsonの8行目から取得）は2です。TokyoDCのADの数は1です。次の分岐に入り、チェックNGになります。
+
+        if (lb_subnets_count > MAXIMUM_LOADBALANCER_SUBNETS) or (lb_subnets_count > availability_domains_count):
+            if MAXIMUM_LOADBALANCER_SUBNETS < availability_domains_count:
+                max_lb_subnets = MAXIMUM_LOADBALANCER_SUBNETS
+            else:
+                max_lb_subnets = availability_domains_count
+            message = "Maximum number of loadbalancer subnets that can be created is " + \
+                str(max_lb_subnets)
+
+cluster_default_inputs.json：8行目
+        "cidr_block_worker": [
+                "10.0.10.0/24",
+                "10.0.11.0/24",
+                "10.0.12.0/24"
+        ],
+        "cidr_block_loadbalancer": [
+                "10.0.20.0/24",
+                "10.0.21.0/24"
+        ],
+
+◆対策
+cluster_default_inputs.json：3行目～8行目
+        "cidr_block_worker": [
+                "10.0.10.0/24"
+        ],
+        "cidr_block_loadbalancer": [
+                "10.0.20.0/24"
+        ],
+
+問題④
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+2019-10-18 06:55:40,527 root INFO Cluster creation failed. Failure in Node pool creation (ServiceError:
+{
+    "code": "InvalidParameter", 
+    "message": "Invalid node image name.", 
+    "opc-request-id": "8938A52A760047D5AC1C5EF883916F29/0A844E135DEF4B7DA78EDCE056A538E8/E20C0F970A7E4831AB3976F1A81C6EA5", 
+    "status": 400
+}
+)
+
+◆原因
+cluster_default_inputs.json：15行目 OCIコンソールでは7.6のみ選択可能
+        "node_image_name": "Oracle-Linux-7.5",
+
+◆対策
+cluster_default_inputs.json：15行目
+        "node_image_name": "Oracle-Linux-7.6",
+
+
+
+問題⑤
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+error: error validating "/home/opc/Downloads/accs-migration-1.0.0/work/notice2/create/deployment.json": error validating data: ValidationError(Deployment.spec.replicas): invalid type for io.k8s.api.apps.v1.DeploymentSpec.replicas: got "string", expected "integer"; if you choose to ignore these errors, turn validation off with --validate=false
+2019-10-22 09:34:42,077 root INFO Error occured while creating kubernetes deployment using command: 1 Exitting......
+2019-10-22 09:34:42,079 root INFO Create app in OKE failed. Exiting.
+
+◆原因
+https://docs.oracle.com/en/cloud/paas/app-container-cloud/dvcjv/create-deployment-json-file.html
+
+"instances"を数字として定義する必要があります。
+
+deployment.json
+
+{
+    "memory": "2G",
+    "instances": "2"
+}
+
+◆対策
+deployment.json
+
+{
+    "memory": "2G",
+    "instances": 2
+}
+
+
+
+
+
+
+

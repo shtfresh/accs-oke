@@ -114,11 +114,81 @@ Oracle Application Container Cloud Serviceアプリケーションの移行を�
 次のリソースがあることを確認します:
 
 * Oracle Cloud Infrastructure tenancyとユーザー・アカウント
+
+
+    1. OCIRにログインするためにオブジェクト・ストレージ・ネームスペースを確認します。
+
+        オブジェクト・ストレージ・ネームスペースは、OCIコンソール画面右上の人型のアイコンをクリックし、展開したプロファイルからテナンシ:<テナンシ名>から確認します。
+        <div align="center"><img src=".\images\prepare.01.png" width=80%></div>
+
+    2. テナンシ情報のオブジェクト・ストレージ設定からオブジェクト・ストレージ・ネームスペースの値を確認します。OCIRへのアクセスする際に使用するため、値をテキストファイルにコピー＆ペーストするなどして控えておいてください。
+        <div align="center"><img src=".\images\prepare.02.png" width=80%></div>
+
+        > 注意：オブジェクト・ストレージ・ネームスペースはテナントに対し1つ割り当てられます。リージョン内のすべてのコンパートメントにまたがり使用されます。任意の文字列が設定され、変更することはできません。
+
+    3. OCIRにログインするためにユーザー名を確認します。
+
+        ユーザー名は、OCIコンソール画面右上の人型のアイコンをクリックし、展開したプロファイルからユーザー名から確認します。
+        <div align="center"><img src=".\images\prepare.03.png" width=80%></div>
+
+    4. ユーザーの詳細情報からユーザー名の値を確認します。OCIRへのアクセスする際に使用するため、値をテキストファイルにコピー＆ペーストするなどして控えておいてください。
+        <div align="center"><img src=".\images\prepare.04.png" width=80%></div>
+
+        > 注意：IDCSでログインしたユーザー名は`oracleidentitycloudservice/<username>`の形になります。
+        
+* OCIRにログインするためには、ログイン先のレジストリを指定するにあたり、ホストされているデータセンターリージョンに合わせて適切なリージョンコードを指定する必要があります。ご自身の環境に合わせて、下表から適切なリージョンコードを見つけてください。
+    リージョン | リージョンコード
+    --------- | ---
+    ap-tokyo-1 | nrt
+    us-ashburn-1 | iad
+    us-phoenix-1 | phx
+    ap-mumbai-1 | bom
+    ap-seoul-1 | icn
+    ap-sydney-1 | syd
+    ca-toronto-1 | yyz
+    eu-frankfurt-1 | fra
+    eu-zurich-1 | zrh
+    sa-saopaulo-1 | gru
+    uk-london-1 | lhr
+
 * 既存のコンパートメントにアクセスします。 [コンパートメントの管理](http://www.oracle.com/pls/topic/lookup?ctx=cloud132&id=oci_compartments)を参照してください
+
 * Oracle Cloud Infrastructure Container Engine for KubernetesクラスタおよびOracle Cloud Infrastructureレジストリリポジトリで操作を実行するユーザー権限。 [クラスタの作成およびデプロイメントのポリシー構成](https://www.oracle.com/pls/topic/lookup?ctx=en/cloud/paas/app-container-cloud/accmi&id=oci_cluster_config_policy)と[リポジトリ・アクセスを制御するポリシー](https://www.oracle.com/pls/topic/lookup?ctx=en/cloud/paas/app-container-cloud/accmi&id=oci_repo_policy)を参照してください
+
+    > 注意：スクリプト・ツールを利用する場合、OCIの管理者権限を付与する必要があります。`ALLOW GROUP Administrators to manage all-resources IN TENANCY`
+
 * 認証トークンの生成 [認証トークンの取得](https://docs.cloud.oracle.com/iaas/Content/Registry/Tasks/registrygettingauthtoken.htm)を参照してください
-* ローカル・ディスク上のmanifest.jsonおよびdeployment.jsonファイルを含むアプリケーション・アーカイブ。 移行スクリプト・ツールを使用すると、Oracle Cloud Infrastructure Object Storageのmanifest.jsonおよびdeployment.jsonファイルなどのアプリケーション・アーカイブをアップロードして、オブジェクトの認証前リクエストを生成できます。 [オブジェクトの管理](https://docs.cloud.oracle.com/iaas/Content/Object/Tasks/managingobjects.htm)を参照してください
+    1. OCIRにログインするために認証トークンを作成します。
+
+        OCIコンソール画面右上の人型のアイコンをクリックし、展開したプロファイルからユーザー設定をクリックします。
+        <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.01.png" width=80%></div>
+
+    2. 左側の「認証トークン」をクリックして、トークンの作成画面に遷移します。そこで「トークンの生成」ボタンをクリックします。
+        <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.02.png" width=80%></div>
+
+    3. トークンの生成ダイアログで、トークンの用途を説明する情報（任意の文字列）を入力し、「トークンの生成」ボタンをクリックします。
+        <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.03.png" width=80%></div>
+
+    4. ダイアログに生成したトークンが表示されます。Copyという文字列をクリックするとクリップボードにこのトークンがコピーされます。そして閉じるをクリックします。
+        <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.04.png" width=80%></div>
+
+        このトークンはあとの手順で利用するため、テキストエディタ等にペーストするなどして控えておいてください。
+
+* ローカル・ディスク上のmanifest.jsonおよびdeployment.jsonファイルを含むアプリケーション・アーカイブ。 移行スクリプト・ツールを使用すると、Oracle Cloud Infrastructure Object Storageのmanifest.jsonおよびdeployment.jsonファイルなどのアプリケーション・アーカイブをアップロードして、オブジェクトの認証前リクエストを生成できます。 [オブジェクトの管理](https://docs.cloud.oracle.com/iaas/Content/Object/Tasks/managingobjects.htm)を参照してください。
+
+    1. 手動移行の場合、アプリケーション・アーカイブのコンテンツを抽出します。  
+        例: 次はOracle Application Container Cloud Service用のアプリケーション・アーカイブ（JavaSE）  
+        <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\03.Build.the.Docker.Image.001.png" width=50%></div>  
+        zipファイルを解凍し、Oracle Cloud Infrastructure Container Engine for Kubernetes用のアプリケーション・アーカイブ（manifest.jsonとJarファイル）が得られます。
+        <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\03.Build.the.Docker.Image.002.png" width=50%></div> 
+
+    2. 移行スクリプト・ツールを使用する場合、アプリケーション・アーカイブをオブジェクト・ストレージにアップロードして、オブジェクトの認証前リクエストを生成します。
+        例: 次はOracle Application Container Cloud Service用のアプリケーション・アーカイブ（JavaSE） 
+        <div align="center"><img src=".\images\prepare.05.png" width=80%></div>
+
+
 * (オプション)移行されるアプリケーションで使用するパブリック・ドメイン名(myapp.example.com)
+
 * (オプション)アプリケーションがSSLエンドポイントを必要とする場合、アプリケーション用のSSL証明書と秘密キーを取得する必要があります。
 
 また、次のソフトウェアもインストールおよび構成済みであることを確認してください:
@@ -127,6 +197,7 @@ Oracle Application Container Cloud Serviceアプリケーションの移行を�
 * [Kubectl 1.7.4](https://kubernetes.io/docs/tasks/tools/install-kubectl/)以降
 * [cURL](https://curl.haxx.se/download.html)または[Wget](https://www.gnu.org/software/software.html)
 * [Python 2.7.5, 3.5](https://www.python.org/downloads/)以上(移行スクリプト・ツールを使用している場合はPythonが必要です)。
+* [Oracle Cloud Infrastructure CLI 2.4](https://docs.cloud.oracle.com/iaas/Content/API/SDKDocs/cliinstall.htm)以降
 
 ---
 ## 停止時間要件の理解
@@ -168,7 +239,513 @@ Oracle Cloud Infrastructure Classic上のサービス・インスタンスに現
 ---
 ## スクリプト・ツールを使用したアプリケーションの移行
 
-### TODO
+移行スクリプト・ツールを使用して、Oracle Application Container Cloud ServiceアプリケーションをOracle Cloud Infrastructure Container Engine for Kubernetesに移行します。 移行スクリプト・ツールを使用すると、Kubernetesクラスタの作成とアプリケーションのデプロイに必要なOracle Cloud Infrastructureリソースを作成できます。 また、既存のKubernetesクラスタにアプリケーションをデプロイすることもできます。
+
+移行スクリプト・ツールを使用したアプリケーションの移行には、次のステップが含まれます:
+
+**アプリケーションの作成**
+
+1. Oracle Cloud Infrastructure Container Engine for Kubernetes内の指定のKubernetesクラスタにKubectlを構成します。 Kubernetesクラスタが存在しない場合は、次の詳細でKubernetesクラスタを作成します:
+    * 次を含むVCN:
+        * インターネット・ゲートウェイ
+        * NATゲートウェイ
+        * 2つのロード・バランサ・サブネット。 2つの可用性ドメインの可用性ドメインごとに1つ
+        * 3人のワーカーノード・サブネット。 3つの可用性ドメインの可用性ドメインごとに1つ
+        * ロード・バランシングおよびワーカーノード・サブネットに対するセキュリティ・リストおよびルーティング・ルール
+    * 次のようなワーカー・ノード・プール:
+        * 3つのワーカーノード。 3つの可用性ドメインの1つの可用性ドメイン。
+        * ノード・イメージ: Oracle-Linux-7.6
+        * ノード・シェイプ: VM.Standard2.1
+
+2. アプリケーション・イメージをビルド
+    * URLを指定した場合は、アプリケーション・イメージをローカル・ディスクにダウンロード
+    * オプションのLinuxパッケージを含むローカルDockerイメージをビルド
+    * ローカルDockerイメージを「Oracle Cloud Infrastructureレジストリ」にプッシュ
+
+3. Kubernetesクラスタ内にアプリケーションを作成
+    * 環境変数のConfigMapを作成
+    * SSLが必要な場合に、TLS証明書およびキーのシークレットを作成
+    * Kubernetesデプロイメントおよびサービスyaml構成を作成
+    * Yaml構成を使用して、アプリケーションのデプロイメントおよびサービスを作成
+    * HTTPからHTTPSリダイレクトまたはIP_HASHロード・バランシング・ポリシーがアプリケーションのマニフェストに構成されている場合に、Nginx ingressコントローラを設定
+
+4. (オプション)カスタムURLを設定
+    * DNSゾーンを作成します(存在しない場合)。
+    * DNSゾーンでアプリケーションのDNSレコードを追加
+
+**Delete Application**
+
+1. DNSレコードを削除
+2. Kubernetesリソース(サービス、デプロイメント、ConfigMapおよびシークレット)を削除
+3. (オプション)一時ファイル(アプリケーション・アーカイブおよびコンテンツ、Dockerfile、Kubernetes構成ファイルおよびログ)を削除
+
+**トピックス:**
+
+* 移行スクリプト・ツールのダウンロードおよびインストール
+* 構成ファイルの作成
+* 環境変数の設定
+* Java EE Systemおよびサービス・バインディング・プロパティの構成
+* Kubernetes ClusterとOracle Cloud Services間の接続の有効化
+* アプリケーションの作成
+* アプリケーションの削除
+
+### 移行スクリプト・ツールのダウンロードおよびインストール
+移行スクリプト・ツールは、Oracle Application Container Cloud ServiceアプリケーションをOracle Cloud Infrastructure Container Engine for Kubernetesに移行するのに役立ちます。
+
+移行スクリプト・ツールをダウンロードしてインストールするには、次の手順を実行します:
+Oracle Application Container Cloud Serviceコンソールで、「ヘルプ」をクリックして「ダウンロード・センター」をクリックし、移行スクリプト・ツールをダウンロードします。
+Zipファイルの内容をディレクトリに抽出します。
+
+<div align="center"><img src=".\images\Migrate.Your.Applications.Using.the.Script Tool\01.Download and Install the Migration Script Tool.01.png" width=80%></div>
+
+<div align="center"><img src=".\images\Migrate.Your.Applications.Using.the.Script Tool\01.Download and Install the Migration Script Tool.02.png" width=80%></div>
+
+<div align="center"><img src=".\images\Migrate.Your.Applications.Using.the.Script Tool\01.Download and Install the Migration Script Tool.03.png" width=80%></div>
+
+コマンドライン・ウィンドウを開き、コンテンツを抽出したディレクトリに移動します。
+ヘルプ・コマンドを実行します。
+```
+python app.py -h
+```
+例:
+```
+$ python app.py -h
+usage: app.py [-h] [-a ACTION] [-f CONFIGFILE]
+ 
+Performs various actions on an application in OKE (OCI).
+ 
+optional arguments:
+  -h, --help            show this help message and exit
+  -a ACTION, --action ACTION
+                        Action to perform: a) create - Create an application
+                        (default), b) delete - Delete an application.
+  -f CONFIGFILE, --configFile CONFIGFILE
+                        Location of config file containing information
+                        required to perform the action.
+```
+
+<div align="center"><img src=".\images\Migrate.Your.Applications.Using.the.Script Tool\01.Download and Install the Migration Script Tool.04.png" width=80%></div>
+
+### 構成ファイルの作成
+移行スクリプト・ツールを使用して、アプリケーションを移行するための構成ファイルを作成する必要があります。 このファイルは、Oracle Cloud Infrastructure Container Engine for Kubernetesでアプリケーションを作成するために必要であり、JSON形式の情報が含まれます。
+
+構成ファイルを作成するには、次のテンプレートを使用します:
+```
+{
+    "account": {
+        "authToken": "<auth-token>",
+        "profile": "<oci-profile-name>",
+        "OCIConfig":"<oci-config-path>"
+    },
+    "application": {
+        "name": "<application-name>",
+        "runtime": "<application-runtime>",
+        "source": "<application-archive-location>",
+        "manifest": "<manifest-file>",        
+        "deployment": "<deployment-file>",
+        "ssl": {
+            "tlsKey": "<TLS-key>",
+            "tlsCert": "<TLS-certificate>"
+        },
+        "environment-variables":{
+            "<env-var-key1>": "<env-var-value1>",
+            "<env-var-key2>": "<env-var-value2>"
+        }
+    },
+    "cluster": {
+        "compartmentOCID": "<compartmentOCID>",
+        "name": "<oke-cluster-name>",
+        "sshPublicKey": "<sshPublicKey>"
+    },
+    "dnszone": {
+        "name": "<dnszone-name>",
+        "compartmentOCID": "<compartmentOCID-zone>"
+    }
+}  
+```
+
+テンプレートには次のセクションが含まれています:
+* アカウント: Oracle Cloud Infrastructureアカウントのユーザー情報が含まれています。
+* アプリケーション: アプリケーションの詳細が含まれています。
+* クラスタ: Oracle Cloud Infrastructure Container Engine for Kubernetesクラスタの詳細が格納されます。 既存のクラスタを使用することも、クラスタが存在しない場合に作成することもできます。
+* Dnszone: このセクションはオプションで、カスタムURLのDNSゾーンの詳細を含みます。 dnszone.nameプロパティで指定されているDNSゾーンが存在しない場合は作成されます。 アプリケーションURLは次のように生成されます : `http[s]://${application.name}.${dnszone.name}`.
+
+次の表を使用して、構成ファイルのプレースホルダーを置換します:
+
+プレースホルダー | 説明 | 必須
+---------|----|---
+auth-token | Oracle Cloud Infrastructure認証トークン。 | Yes
+oci-config-path | Oracle Cloud Infrastructure構成ファイルのパス。 デフォルト値: ~/.oci/config。 | No
+oci-profile-name | Oracle Cloud Infrastructure構成プロファイル名。 デフォルト値: DEFAULT。 | No
+application-name | アプリケーションの名前。 | Yes
+application-runtime | アプリケーション・ランタイム: java, node, php, javaee, dotnet, ruby, python,またはgolang. | Yes
+application-archive-location | Oracle Cloud Infrastructure Object Storageのアプリケーション・アーカイブの認証前リクエストURLまたはローカル・ディスクのアプリケーション・アーカイブのロケーション。 | Yes
+manifest-file | manifest.jsonファイルのパス。 manifest.jsonファイルのパスを指定した場合、アプリケーション・アーカイブのmanifest.jsonファイルは無視されます。 | No
+deployment-file | deployment.jsonファイルのパス。 deployment.jsonファイルのパスが指定されている場合、アプリケーション・アーカイブのdeployment.jsonファイルは無視されます。注意："instances"を数字として定義する必要があります。例：{"instances": 2} | No
+env-var-keyNとenv-var-valueN | アプリケーションによって使用されるカスタム環境変数です。 | No
+TLS-certificate | ワーカーノードのSSH公開キー・ファイルのパス。 このSSH公開キーを持つワーカーノードにアクセスするには、ベース・ホストを設定する必要があります。 [ホスト](https://cloud.oracle.com/iaas/whitepapers/bastion_hosts.pdf)を参照してください。 | application.sslセクションを指定した場合は必須です。
+TLS-key | TLSキー・ファイルのパス。 | application.sslセクションを指定した場合は必須です。
+compartmentOCID | クラスタが存在するか、作成する必要があるコンパートメントのOCID。 | Yes
+oke-cluster-name | クラスタの名前（15文字以内）。 | Yes
+sshPublicKey | ワーカーノードのSSH公開キー・ファイルのパス。 | No
+compartmentOCID-zone | DNSゾーンが存在するコンパートメントのOCID、または作成する必要があります。 | dnszoneセクションを指定した場合は必須です。
+dnszone-name | DNSゾーンの名前。 | dnszoneセクションを指定した場合は必須です。
+
+例:
+
+```json
+{
+	"account": {
+		"authToken": "6h.}82DrE4+k#sfDa)3<",
+                "profile": "DEFAULT",
+                "OCIConfig":"~/.oci/config"
+	},
+	"application": {
+		"name": "notice2",
+		"runtime": "java",
+		"source": "https://objectstorage.us-ashburn-1.oraclecloud.com/p/RVQB9JpnLHUcTgHjOSC90SZqWQSqP5qbeQflNeT_zBk/n/sehubjapacprod/b/ACCS2OKE/o/Notice-0.0.1-SNAPSHOT-dist.zip",
+		"deployment": "/home/opc/Downloads/accs-migration-1.0.0/deployment.json",
+        "environment-variables":{
+            "DBAAS_DEFAULT_CONNECT_DESCRIPTOR": "146.56.2.52:1521/PDB1.jptest01.oraclecloud.internal",
+            "DBAAS_USER_NAME": "oracleusr2",
+            "DBAAS_USER_PASSWORD": "**************",
+            "DBAAS_LISTENER_HOST_NAME": "146.56.2.52",
+            "DBAAS_LISTENER_PORT": "1521",
+            "DBAAS_DEFAULT_SID": "ORCL",
+            "DBAAS_DEFAULT_SERVICE_NAME": "PDB1.jptest01.oraclecloud.internal"
+        }
+	},
+	"cluster": {
+		"compartmentOCID": "ocid1.compartment.oc1..aaaaaaaajgkfq6r4xflex534ouhycro3rxflwcnwp4aenvrvjygg62y2ar6a",
+		"name": "mycluster2",
+		"sshPublicKey": "/home/opc/Downloads/accs-migration-1.0.0/public.pub"
+	},
+	"dnszone": {
+		"name": "taosheng.tk",
+		"compartmentOCID": "ocid1.compartment.oc1..aaaaaaaajgkfq6r4xflex534ouhycro3rxflwcnwp4aenvrvjygg62y2ar6a"
+	}
+}
+```
+
+### スクリプト・ツールのデフォルト設定の変更
+移行スクリプト・ツールの配下にある設定ファイル(source/resources/cluster_default_inputs.json)を必要に応じて変更する必要があります。
+
+>注意：cidr_block_worker（ワーカーノードのサブネット）、cidr_block_loadbalancer（ロードバランシングのサブネット）、nodes_per_subnet（サブネットごとのワーカーノード数）は、リージョン内の可用性ドメイン全体（または、東京リージョンなど単一可用性ドメインの場合、その可用性ドメイン内の障害ドメイン全体）に可能な限り均等に分散されます。 実運用の際は可用性を考慮し、適切な値を指定してください。
+
+>注意：最新版(2019/10/25)OCIでは、イメージのバージョン`Oracle-Linux-7.5`が利用不可になりましたので、利用可能のバージョンに修正してください。
+
+cluster_default_inputs.jsonの修正例（東京リージョン）：
+
+```json
+{
+        "cidr_block_vcn": "10.0.0.0/16",
+        "cidr_block_worker": [
+                "10.0.10.0/24"
+        ],
+        "cidr_block_loadbalancer": [
+                "10.0.20.0/24"
+        ],
+        "work_req_polling_time_seconds": 60,
+        "work_req_polling_count": 60,
+        "nodepool_name": "pool1",
+        "node_image_name": "Oracle-Linux-7.6",
+        "node_shape": "VM.Standard2.1",
+        "nodes_per_subnet": 3,
+        "worker_egress_rules_file": "source/resources/worker-egress-rule.json",
+        "worker_ingress_rules_file": "source/resources/worker-ingress-rule.json",
+        "lb_egress_rules_file": "source/resources/lb-egress-rule.json",
+        "lb_ingress_rules_file": "source/resources/lb-ingress-rule.json",
+        "worker_subnet_display_name": "oke-subnet-<cluster_name>-<ad>",
+        "lb_subnet_display_name": "oke-svclbsubnet-<cluster_name>-<ad>",
+        "worker_sec_list_display_name": "oke-wkr-seclist-<cluster_name>",
+        "lb_sec_list_display_name": "oke-lb-seclist-<cluster_name>",
+        "kubeconfig_file": "~/.kube/config"
+
+}
+```
+
+### 環境変数の設定
+Oracle Application Container Cloud Serviceアプリケーションに必要な環境変数をKubernetes構成に移行します。
+
+**カスタム環境変数**
+
+アプリケーションのこれらの変数は、deployment.jsonファイルで定義しました。 移行スクリプトによってdeployment.jsonファイルが読み取られ、その変数がKubernetes構成に自動的に追加されます。
+
+**サービス・バインド環境変数**
+
+Oracle Application Container Cloud Serviceでは、アプリケーションでサービス・バインディングを追加すると、これらの変数が自動的に作成されます。 アプリケーションで1つ以上のサービス・バインディングが構成されている場合は、各サービス・バインディングの環境変数を特定します。
+
+サービス・バインディング環境変数を構成する手順は、次のとおりです:
+
+Oracle Application Container Cloud Serviceコンソールでアプリケーションにアクセスします。
+「デプロイメント」タブをクリックし、「環境変数」セクションでサービス・バインディング変数を識別します。
+構成ファイルを編集し、各変数を"key": "value"として別の行に追加します。
+例:
+```json
+        "environment-variables":{
+            "DBAAS_DEFAULT_CONNECT_DESCRIPTOR": "146.56.2.52:1521/PDB1.jptest01.oraclecloud.internal",
+            "DBAAS_USER_NAME": "oracleusr2",
+            "DBAAS_USER_PASSWORD": "**************",
+            "DBAAS_LISTENER_HOST_NAME": "146.56.2.52",
+            "DBAAS_LISTENER_PORT": "1521",
+            "DBAAS_DEFAULT_SID": "ORCL",
+            "DBAAS_DEFAULT_SERVICE_NAME": "PDB1.jptest01.oraclecloud.internal"
+        }
+```
+
+### Java EE Systemおよびサービス・バインディング・プロパティの構成
+Java EEアプリケーションで、システムおよびJNDIサービス・バインディング・プロパティを使用する場合、構成ファイルの環境変数セクションでこれらのプロパティを指定できます。
+
+#### システム・プロパティ
+Java EEアプリケーションでは、構成ファイルでEXTRA_JAVA_PROPERTIES環境変数を使用してシステム・プロパティを構成できます。
+
+1. Java EEアプリケーションのシステム・プロパティを指定します。
+2. 構成ファイルに、EXTRA_JAVA_PROPERTIESという名前の環境変数を追加します。 この変数の値内で、 -Dフラグを使用して各システム・プロパティを指定します。 各 -Dフラグは空白で区切ります。
+    例:
+    ```
+    "EXTRA_JAVA_PROPERTIES": "-DconfigPath=/u01/app/conf/ -DlogFile=/u01/app/logs/app.log"
+    ```
+
+#### サービス・バインディング・プロパティ
+Java EEアプリケーションで1つ以上のJNDIサービス・バインディング・プロパティ、つまりjndi-name, max-capacity, min-capacity,またはdriver-properties,を使用している場合、それらを構成ファイルに追加する必要があります。
+
+1. アプリケーションで使用されるサービス・バインディングを指定してください。
+2. 構成ファイルを編集します。
+3. キーを使用してサービスの環境変数を追加します:
+    ```
+    "<service-type>_SERVICE_BINDING_NAME": "<service-name>",
+    ```
+    説明:
+    * <service-type>はサービス・タイプです。 たとえば、DBAAS, MYSQLCSなどです。
+    * <service-name>は、サービスの名前です。
+    例:
+    ```
+    "DBAAS_SERVICE_BINDING_NAME": "testDb"
+    ```
+
+4. キーを使用して、サービスのJNDIサービス・バインディング・プロパティを指定します:
+    ```
+    "<service-type>_PROPERTIES": "jndi-name:<jndi-name>|max-capacity:<max-capacity>|min-capacity:<min-capacity>|driver-properties:<driver-properties>|" 
+    ```
+    説明:
+
+    * <ocic-service-type>はサービス・タイプです。 たとえば、DBAAS, MYSQLCSなどです。
+    * <jndi-name>は、サービスのJNDI名です。 "jdbc/<value>".形式である必要があります。例: "jdbc/dbcs".
+    * <max-capacity>は、接続プールの最大容量です。
+    * <min-capacity>は、接続プールの最小容量です。
+    * <driver-properties>は、JDBCドライバに渡されるプロパティのセミコロン区切りリストです。
+
+例:
+
+```json
+"environment-variables": {
+  "MYSQLCS_CONNECT_STRING": "10.x.x.x:3306/mydb",
+  "MYSQLCS_MYSQL_PORT": "3306",
+  "MYSQLCS_USER_PASSWORD": "<your_password>",
+  "MYSQLCS_USER_NAME": "TestUser",
+  "DBAAS_DEFAULT_CONNECT_DESCRIPTOR": "10.x.x.x:1521/mydb",
+  "DBAAS_USER_NAME": "TestUser",
+  "DBAAS_USER_PASSWORD": "<your_password>",
+  "DBAAS_LISTENER_HOST_NAME": "10.x.x.x",
+  "DBAAS_LISTENER_PORT": "1521",
+  "DBAAS_DEFAULT_SID": "ORCL",
+  "DBAAS_DEFAULT_SERVICE_NAME": "mydb",
+  "EXTRA_JAVA_PROPERTIES": "-DconfigPath=/u01/app/conf/ -DlogFile=/u01/app/logs/app.log",
+  "DBAAS_SERVICE_BINDING_NAME": "dbaasDb",
+  "DBAAS_PROPERTIES": "jndi-name:jdbc/dbcs|max-capacity:5|min-capacity:1|driver-properties:user=admin;database=test|",
+  "MYSQLCS_SERVICE_BINDING_NAME": "mysqlDb",
+  "MYSQLCS_PROPERTIES": "jndi-name:jdbc/mysqlcs|max-capacity:10|min-capacity:1|driver-properties:user=oci;database=app|"
+}
+```
+
+### Kubernetes ClusterとOracle Cloud Services間の接続の有効化
+Oracle Application Container Cloud Serviceのアプリケーションがサービス・バインディングを使用して、他のOracle Cloudサービスとの通信を有効にする場合、アプリケーションの移行後にそれらのサービスと通信できるようにする必要があります。
+
+次の2つのシナリオがあります:
+
+* 使用しているサービスがOracle Cloud Infrastructure Classicにある場合は、Oracle Cloud Infrastructure Classicサービスで、Kubernetesクラスタの就業者ノードにアタッチされているNAT GatewayのパブリックIPアドレスをサービスに接続できるようにするアクセス・ルールを作成します。 たとえば、アプリケーションでOracle Database Cloud Serviceを使用する場合は、「Database Cloud Serviceへのネットワーク・アクセスの管理」を参照してください。
+
+    >注意: NAT GatewayのパブリックIPアドレスは、メニューからOracle Cloud Infrastructureコンソールに配置できます: **開発者サービス、コンテナ・クラスタ(OKE)、クラスタ詳細、ノード・プール・セクション、ノード・インスタンスの詳細、仮想クラウド・ネットワーク詳細、NATゲートウェイ、パブリックIPアドレス**。
+
+* サービスがOracle Cloud Infrastructureにある場合、サービスがデプロイされているVCNおよびサブネットを探します。 Kubernetesクラスタからサービスへのトラフィックを可能にするために、イングレス・セキュリティ・ルールが存在することを確認してください。 Oracle Cloud Infrastructureのドキュメントの[セキュリティ・リスト](https://www.oracle.com/pls/topic/lookup?ctx=en/cloud/paas/app-container-cloud/accmi&id=oci_create_seclist)を参照してください。
+
+### アプリケーションの作成
+移行スクリプト・ツールで作成アクションを使用して、Oracle Application Container Cloud ServiceアプリケーションをOracle Cloud Infrastructure Container Engine for Kubernetesに移行します。
+
+1. アプリケーションを作成するには、コマンドライン・ウィンドウを開き、移行スクリプトを実行します。 構成ファイルへのパスを指定します。
+    ```
+    python app.py -f <path-of-config-file>
+    ```
+2. コマンドライン・ウィンドウで、YESと入力してクラスタを作成します。 既存のクラスタを使用している場合、このメッセージは表示されません。
+3. DNSゾーンを作成するには、YESを入力します。 既存のDNSゾーンを使用している場合、または指定していない場合、このメッセージは表示されません。
+    
+例:
+```
+[root@accs2oke accs-migration-1.0.0]# python app.py -f ./config.json
+2019-10-25 05:54:01,328 root INFO Using default action: create
+2019-10-25 05:54:01,328 root INFO Starting application creation.
+2019-10-25 05:54:01,329 root INFO URL setup is enabled. Checking if zone name and compartment OCID is given.
+2019-10-25 05:54:01,330 root INFO Fetching OCI details....
+2019-10-25 05:54:05,205 root INFO Checking OKE cluster existence in OCI with provided name: mycluster4
+The OKE Cluster with name : mycluster4 does not exist in OCI and it needs to be created to proceed further. Do you want to continue ? Yes/No: Yes
+2019-10-25 05:54:14,554 root INFO Creating VCN...
+2019-10-25 05:54:16,008 root INFO VCN successfully created with id : ocid1.vcn.oc1.ap-tokyo-1.aaaaaaaawbz5stwpspzv26wepzu6ss5bue7564qbdugfjwncksxx5mgssbga
+2019-10-25 05:54:16,009 root INFO Creating internet gateway...
+2019-10-25 05:54:17,553 root INFO Internet Gateway successfully created with id ocid1.internetgateway.oc1.ap-tokyo-1.aaaaaaaar552twpc4hyjerqwlbieyqvm7ufrtu4rdxww7v6mxmdwbip4k3jq
+2019-10-25 05:54:17,553 root INFO Creating nat gateway...
+2019-10-25 05:54:19,693 root INFO NAT Gateway successfully created with id ocid1.natgateway.oc1.ap-tokyo-1.aaaaaaaajfdhbhc7bs24lcjpnbc34f5t42giiyitlfawq34lvcl545m4etgq
+2019-10-25 05:54:19,694 root INFO Creating Route table...
+2019-10-25 05:54:19,694 root INFO Creating Route rules...
+2019-10-25 05:54:19,694 root INFO Successfully created route rules: [{"cidrBlock": "0.0.0.0/0", "networkEntityId": "ocid1.internetgateway.oc1.ap-tokyo-1.aaaaaaaar552twpc4hyjerqwlbieyqvm7ufrtu4rdxww7v6mxmdwbip4k3jq"}]
+2019-10-25 05:54:21,201 root INFO Route table successfully created with id : ocid1.routetable.oc1.ap-tokyo-1.aaaaaaaa3dbxnjmqhgnekb6rbqhytwrrsndgiceycoyemshsh3ni2qfa6xuq
+2019-10-25 05:54:21,201 root INFO Creating Route table...
+2019-10-25 05:54:21,201 root INFO Creating Route rules...
+2019-10-25 05:54:21,202 root INFO Successfully created route rules: [{"cidrBlock": "0.0.0.0/0", "networkEntityId": "ocid1.natgateway.oc1.ap-tokyo-1.aaaaaaaajfdhbhc7bs24lcjpnbc34f5t42giiyitlfawq34lvcl545m4etgq"}]
+2019-10-25 05:54:22,598 root INFO Route table successfully created with id : ocid1.routetable.oc1.ap-tokyo-1.aaaaaaaajq5b5h6f7wykzqydszaith2vsunpusrmdicnr552daiw6oeb5x5a
+2019-10-25 05:54:22,598 root INFO Creating security list for worker nodes...
+2019-10-25 05:54:23,949 root INFO Security list successfully created with id ocid1.securitylist.oc1.ap-tokyo-1.aaaaaaaagowwsj3nbmchliykz5c2ve7e274pramkaictng27ww7nxk4gqwjq
+2019-10-25 05:54:23,949 root INFO Creating security list for loadbalancer...
+2019-10-25 05:54:25,305 root INFO Security list successfully created with id ocid1.securitylist.oc1.ap-tokyo-1.aaaaaaaag5efx444nmp2leipygbhppmh4osbl4g2iyv4c6oi3en5c5353v7q
+2019-10-25 05:54:25,305 root INFO Getting availability domains for the compartment 
+2019-10-25 05:54:26,589 root INFO Successfully fetched availability domains for the compartment.
+2019-10-25 05:54:26,590 root INFO Number of subnets to be created for worker nodes : 1
+2019-10-25 05:54:26,590 root INFO Creating worker subnet 1
+2019-10-25 05:54:26,590 root INFO Creating subnet...
+2019-10-25 05:54:26,590 root INFO Creating subnet with security list: ["ocid1.securitylist.oc1.ap-tokyo-1.aaaaaaaagowwsj3nbmchliykz5c2ve7e274pramkaictng27ww7nxk4gqwjq"]
+2019-10-25 05:54:28,059 root INFO Subnet id is ocid1.subnet.oc1.ap-tokyo-1.aaaaaaaa34pkplxkjdqdoxw5v3v2jki24xi5uiu4jlugsaezc4zxxvnycpaq
+2019-10-25 05:54:28,059 root INFO Number of subnets to be created for loadbalancer : 1
+2019-10-25 05:54:28,059 root INFO Creating loadbalancer subnet 1
+2019-10-25 05:54:28,060 root INFO Creating subnet...
+2019-10-25 05:54:28,060 root INFO Creating subnet with security list: ["ocid1.securitylist.oc1.ap-tokyo-1.aaaaaaaag5efx444nmp2leipygbhppmh4osbl4g2iyv4c6oi3en5c5353v7q"]
+2019-10-25 05:54:29,741 root INFO Subnet id is ocid1.subnet.oc1.ap-tokyo-1.aaaaaaaawgzqzyfesbrtrn7jn43hsgnqzift6zxjymupsag3ftqlqja2ipzq
+2019-10-25 05:54:29,741 root INFO Fetching latest kubernetes version...
+2019-10-25 05:54:31,005 root INFO The latest Kubernetes version available is v1.13.5
+2019-10-25 05:54:31,005 root INFO Creating cluster...
+2019-10-25 05:54:32,745 root INFO Work request ID to create cluster is: ocid1.clustersworkrequest.oc1.ap-tokyo-1.aaaaaaaaafswiobug5rdimbqgqzdomlegzswezjyga3dqzbugwzdsyzsmezt
+2019-10-25 05:54:32,746 root INFO Monitoring work request ocid1.clustersworkrequest.oc1.ap-tokyo-1.aaaaaaaaafswiobug5rdimbqgqzdomlegzswezjyga3dqzbugwzdsyzsmezt
+2019-10-25 05:54:34,022 root INFO The status is IN_PROGRESS
+2019-10-25 05:54:34,022 root INFO Checking the status again in 60 seconds.
+2019-10-25 05:55:35,353 root INFO The status is IN_PROGRESS
+2019-10-25 05:55:35,354 root INFO Checking the status again in 60 seconds.
+2019-10-25 05:56:36,659 root INFO The status is IN_PROGRESS
+2019-10-25 05:56:36,660 root INFO Checking the status again in 60 seconds.
+2019-10-25 05:57:38,029 root INFO The status is IN_PROGRESS
+2019-10-25 05:57:38,030 root INFO Checking the status again in 60 seconds.
+2019-10-25 05:58:39,329 root INFO The status is SUCCEEDED
+2019-10-25 05:58:39,330 root INFO Cluster successfully created with id : ocid1.cluster.oc1.ap-tokyo-1.aaaaaaaaafrdgndbgzsdoolfgm3genlbmizdontggrqtondgmcqtamjqgjsg
+2019-10-25 05:58:42,695 root INFO Work request ID to create node pool is: ocid1.clustersworkrequest.oc1.ap-tokyo-1.aaaaaaaaae2dkzjwga3wkobxgy4wiojwhfsdenjvme3dcnldgw3tomdegq4t
+2019-10-25 05:58:42,695 root INFO Monitoring work request ocid1.clustersworkrequest.oc1.ap-tokyo-1.aaaaaaaaae2dkzjwga3wkobxgy4wiojwhfsdenjvme3dcnldgw3tomdegq4t
+2019-10-25 05:58:43,966 root INFO The status is SUCCEEDED
+2019-10-25 05:58:43,967 root INFO Node pool successfully created with id: ocid1.nodepool.oc1.ap-tokyo-1.aaaaaaaaaeywgm3dhaytcyldgm2gczjzmyytanteg4ytsyzwmn4dqzjxg5td
+2019-10-25 05:58:43,967 root INFO Checking worker nodes status for ACTIVE state ...
+2019-10-25 05:58:45,341 root INFO Nodes data is not available yet, will retry in 60 seconds.
+2019-10-25 05:59:46,651 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-2
+2019-10-25 05:59:46,651 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-1
+2019-10-25 05:59:46,652 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-0
+2019-10-25 05:59:46,652 root INFO Nodes are not in ACTIVE state, will retry in 60 seconds.
+2019-10-25 06:00:47,934 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-2
+2019-10-25 06:00:47,934 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-1
+2019-10-25 06:00:47,935 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-0
+2019-10-25 06:00:47,935 root INFO Nodes are not in ACTIVE state, will retry in 60 seconds.
+2019-10-25 06:01:49,211 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-2
+2019-10-25 06:01:49,212 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-1
+2019-10-25 06:01:49,212 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-0
+2019-10-25 06:01:49,212 root INFO Nodes are not in ACTIVE state, will retry in 60 seconds.
+2019-10-25 06:02:50,550 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-1
+2019-10-25 06:02:50,551 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-0
+2019-10-25 06:02:50,551 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-2
+2019-10-25 06:02:50,551 root INFO Nodes are not in ACTIVE state, will retry in 60 seconds.
+2019-10-25 06:03:51,870 root INFO Checking for worker node: oke-cqtamjqgjsg-n4dqzjxg5td-szxxvnycpaq-2
+2019-10-25 06:03:51,870 root INFO Worker node is in ACTIVE state now, proceeding further.
+2019-10-25 06:03:51,871 root INFO Kubeconfig file not readable or missing at location: /root/.kube/config
+2019-10-25 06:03:51,871 root INFO Creating kubeconfig at default location in user's home.
+2019-10-25 06:03:53,339 root INFO New config written to the Kubeconfig file /root/.kube/config
+
+2019-10-25 06:03:54,842 root INFO Kubernetes master is running at https://cqtamjqgjsg.ap-tokyo-1.clusters.oci.oraclecloud.com:6443
+KubeDNS is running at https://cqtamjqgjsg.ap-tokyo-1.clusters.oci.oraclecloud.com:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+2019-10-25 06:03:54,843 root INFO Kubectl configured properly.
+2019-10-25 06:03:58,727 root INFO Updated the deployment file with user provided input.
+2019-10-25 06:03:58,728 root INFO Using baseimage: iad.ocir.io/psmsvc3/accs/java8:latest
+2019-10-25 06:03:58,829 root INFO Pulling base image : iad.ocir.io/psmsvc3/accs/java8:latest
+2019-10-25 06:04:30,145 root INFO Building application image. This can take several minutes...
+2019-10-25 06:05:04,228 root INFO Image tag is: NRT.ocir.io/sehubjapacprod/accs/oracleidentitycloudservice/shengjun.zhu/notice4:latest
+2019-10-25 06:05:04,309 root INFO Pushing application image to OCI registry. This can take several minutes...
+2019-10-25 06:05:43,770 root INFO Application image successfully pushed to OCI registry.
+2019-10-25 06:05:52,017 root INFO Config Map created successfully
+2019-10-25 06:05:52,017 root INFO Creating docker-registry secret for pulling images from ocir.
+2019-10-25 06:05:53,382 root INFO Docker-registry secret for pulling images from ocir has been created successfully.
+2019-10-25 06:05:53,382 root INFO Creating deployment for application. This can take several minutes...
+Waiting for deployment "notice4-deployment" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "notice4-deployment" rollout to finish: 1 of 2 updated replicas are available...
+deployment "notice4-deployment" successfully rolled out
+2019-10-25 06:06:42,141 root INFO Deployment created successfully.
+2019-10-25 06:06:42,142 root INFO Creating service for application. This can take several minutes...
+2019-10-25 06:06:43,626 root INFO Kubernetes service created successfully.
+2019-10-25 06:06:45,075 root INFO Checking if load balancer is accessible. This can take several minutes...
+2019-10-25 06:06:46,463 root INFO Load balancer is not accessible. Trying again in seconds: 30
+2019-10-25 06:07:17,799 root INFO Load balancer is accessible. Public IP address of load balancer is: 140.238.57.90
+2019-10-25 06:07:20,440 root INFO Zone already exists: taosheng.tk
+2019-10-25 06:07:22,702 root INFO Adding DNS record: notice4.taosheng.tk
+2019-10-25 06:07:32,917 root INFO DNS record added.
+2019-10-25 06:07:32,918 root INFO Application URL is: http://notice4.taosheng.tk
+2019-10-25 06:07:32,919 root INFO Application creation completed.
+```
+この例では、クラスタ及び関連のすべてのリソースを作成し、Javaアプリケーションを作成し、カスタムURLおよび新しいDNSゾーンを使用します。
+
+### アプリケーションの削除
+作成中に問題が発生した場合は、Oracle Cloud Infrastructure Container Engine for Kubernetesクラスタからアプリケーションを削除して再起動できます。 構成ファイルを読み取り、DNSレコード、Kubernetesクラスタ内のアプリケーション・リソースおよびアプリケーション・ディレクトリ(migration_tool/work/`<application-name>`)を削除するアプリケーション削除アクションを使用できます。
+
+1. アプリケーションを削除するには、コマンドライン・ウィンドウを開き、移行スクリプトを実行します。 構成ファイルへのパスを指定します。
+    ```
+    python app.py -a delete -f <path-of-config-file>
+    ```
+
+2. コマンドライン・ウィンドウで、アプリケーション・ディレクトリを削除するYESを入力します。
+    >注意: 削除オプションでは、クラスタ、Vcn、サブネット、DNSゾーンなどのOracle Cloud Infrastructureリソースは削除されません。 リソースを削除する必要がある場合は、Oracle Cloud InfrastructureコンソールまたはREST APIを使用して、リソースを手動で削除する必要があります。
+
+例:
+```
+[root@accs2oke accs-migration-1.0.0]# python app.py -a delete -f ./config.json
+2019-10-25 07:04:29,113 root INFO Starting application deletion.
+2019-10-25 07:04:29,114 root INFO Verifying input config file...
+2019-10-25 07:04:29,114 root INFO URL setup is enabled. Checking if zone name and compartment OCID is given.
+2019-10-25 07:04:29,114 root INFO Fetching OCI details....
+2019-10-25 07:04:33,142 root INFO Checking if any Kubernetes resources exist for the application...
+Error from server (NotFound): secrets "notice4-tls-certificate" not found
+2019-10-25 07:04:40,218 root INFO Some Kubernetes resources found for the application. Cleaning up...
+2019-10-25 07:04:45,659 root INFO Kubernetes resources cleaned up successfully.
+2019-10-25 07:04:45,659 root INFO Checking if application data exists in local directory...
+The application data exists at location /home/opc/Downloads/accs-migration-1.0.0/work/notice4 . Do you want to remove it ? Yes/No: Yes
+2019-10-25 07:05:48,396 root INFO Successfully removed application data from local directory.
+2019-10-25 07:05:48,398 root INFO Checking if DNS zone record exists...
+2019-10-25 07:05:52,395 root INFO DNS zone record exists. Removing it...
+2019-10-25 07:05:55,563 root INFO DNS zone record removed successfully.
+2019-10-25 07:05:55,564 root INFO Application deletion completed. Check the logs for further details.
+```
+
+### スクリプト・ログの取得
+スクリプト・ログの詳細を取得できます: $SCRIPT_ROOT_FOLDER/work/<app-name>/<action>/logs/accs-migration.log.
+
+説明:
+1. $SCRIPT_ROOT_FOLDERは移行スクリプト・ツール(app.py)のディレクトリです。
+2. `<app-name>`は、構成ファイルで指定したアプリケーション名です。
+例:
+```
+[root@accs2oke accs-migration-1.0.0]# tail -10 /home/opc/Downloads/accs-migration-1.0.0/work/notice4/create/logs/accs-migration.log
+2019-10-25 06:06:45,074 root DEBUG Service type is: LoadBalancer
+2019-10-25 06:06:45,075 root INFO Checking if load balancer is accessible. This can take several minutes...
+2019-10-25 06:06:46,463 root INFO Load balancer is not accessible. Trying again in seconds: 30
+2019-10-25 06:07:17,799 root INFO Load balancer is accessible. Public IP address of load balancer is: 140.238.57.90
+2019-10-25 06:07:20,440 root INFO Zone already exists: taosheng.tk
+2019-10-25 06:07:20,441 root DEBUG DNS record: notice4.taosheng.tk
+2019-10-25 06:07:22,702 root INFO Adding DNS record: notice4.taosheng.tk
+2019-10-25 06:07:32,917 root INFO DNS record added.
+2019-10-25 06:07:32,918 root INFO Application URL is: http://notice4.taosheng.tk
+2019-10-25 06:07:32,919 root INFO Application creation completed.
+```
 
 ---
 ## アプリケーションの手動移行
@@ -247,12 +824,6 @@ kubectlを使用してクラスタにアクセスできるように、kubeconfig
 Dockerイメージをビルドするには、Dockerfileにそのイメージを組み立てる命令が含まれている必要があります。 アプリケーション・ランタイムに基づいて、テンプレートを使用してDockerfileを作成できます。
 
 **[コンテナイメージの作成](https://oracle-japan.github.io/paasdocs/documents/containers/handson/k8s-walkthrough/#1)もご参照ください。**
-
-1. アプリケーション・アーカイブのコンテンツを抽出します。  
-    例: 次はOracle Application Container Cloud Service用のアプリケーション・アーカイブ（JavaSE）  
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\03.Build.the.Docker.Image.001.png" width=50%></div>  
-    zipファイルを解凍し、Oracle Cloud Infrastructure Container Engine for Kubernetes用のアプリケーション・アーカイブ（manifest.jsonとJarファイル）が得られます。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\03.Build.the.Docker.Image.002.png" width=50%></div>  
 
 2. アプリケーションのランタイム・タイプを指定してください。
    > 注意: Java、Node、PHP、Java EE、DotNet、Ruby、PythonまたはGoのいずれかにしてください。
@@ -799,65 +1370,6 @@ Dockerイメージをビルドした後、Oracle Cloud Infrastructureレジス�
 
 **[OCIRへのプッシュとOKEへのデプロイ](https://oracle-japan.github.io/paasdocs/documents/containers/handson/k8s-walkthrough/#2-ociroke)もご参照ください。**
 
-#### OCIRを利用するための事前準備
-DockerイメージをOCIRにプッシュする前に、幾つのか準備が必要です。
-
-0. まずは、OCIRへのアクセス許可のために、[ポリシーの設定](https://docs.cloud.oracle.com/iaas/Content/Registry/Concepts/registrypolicyrepoaccess.htm)が必要です。
-    ```
-    Allow group acme-managers to manage repos in tenancy
-    ```
-1. OCIRにログインするために認証トークンを作成します。
-
-    OCIコンソール画面右上の人型のアイコンをクリックし、展開したプロファイルからユーザー設定をクリックします。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.01.png" width=80%></div>
-
-2. 左側の「認証トークン」をクリックして、トークンの作成画面に遷移します。そこで「トークンの生成」ボタンをクリックします。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.02.png" width=80%></div>
-
-3. トークンの生成ダイアログで、トークンの用途を説明する情報（任意の文字列）を入力し、「トークンの生成」ボタンをクリックします。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.03.png" width=80%></div>
-
-4. ダイアログに生成したトークンが表示されます。Copyという文字列をクリックするとクリップボードにこのトークンがコピーされます。そして閉じるをクリックします。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.04.png" width=80%></div>
-
-    このトークンはあとの手順で利用するため、テキストエディタ等にペーストするなどして控えておいてください。
-
-5. OCIRにログインするためには、ログイン先のレジストリを指定するにあたり、ホストされているデータセンターリージョンに合わせて適切なリージョンコードを指定する必要があります。ご自身の環境に合わせて、下表から適切なリージョンコードを見つけてください。
-    リージョン | リージョンコード
-    --------- | ---
-    ap-tokyo-1 | nrt
-    us-ashburn-1 | iad
-    us-phoenix-1 | phx
-    ap-mumbai-1 | bom
-    ap-seoul-1 | icn
-    ap-sydney-1 | syd
-    ca-toronto-1 | yyz
-    eu-frankfurt-1 | fra
-    eu-zurich-1 | zrh
-    sa-saopaulo-1 | gru
-    uk-london-1 | lhr
-
-6. OCIRにログインするためにオブジェクト・ストレージ・ネームスペースを確認します。
-
-    オブジェクト・ストレージ・ネームスペースは、OCIコンソール画面右上の人型のアイコンをクリックし、展開したプロファイルからテナンシ:<テナンシ名>から確認します。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.05.png" width=80%></div>
-
-7. テナンシ情報のオブジェクト・ストレージ設定からオブジェクト・ストレージ・ネームスペースの値を確認します。OCIRへのアクセスする際に使用するため、値をテキストファイルにコピー＆ペーストするなどして控えておいてください。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.06.png" width=80%></div>
-
-    > 注意：オブジェクト・ストレージ・ネームスペースはテナントに対し1つ割り当てられます。リージョン内のすべてのコンパートメントにまたがり使用されます。任意の文字列が設定され、変更することはできません。
-
-8. OCIRにログインするためにユーザー名を確認します。
-
-    ユーザー名は、OCIコンソール画面右上の人型のアイコンをクリックし、展開したプロファイルからユーザー名から確認します。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.08.png" width=30%></div>
-
-9. ユーザーの詳細情報からユーザー名の値を確認します。OCIRへのアクセスする際に使用するため、値をテキストファイルにコピー＆ペーストするなどして控えておいてください。
-    <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.09.png" width=80%></div>
-
-    > 注意：IDCSでログインしたユーザー名は`oracleidentitycloudservice/<username>`の形になります。
-
-#### OCIRにコンテナイメージをプッシュする
 1. コマンド行ウィンドウで、ローカルDockerイメージのタグを作成します。 次の書式を使用します。
     ```
     image_tag="<region-code>.ocir.io/<tenancy>/accs/<リポジトリ名>/<app-name>:latest"
@@ -1874,7 +2386,7 @@ Nginxイングレス・コントローラがトラフィックをアプリケー
                 servicePort: 80
     ```
 
-4. イングレス・リソースを作成するには、コマンド行ウィンドウで、次のコマンドを実行します。 <path-to-nginx-ingress-yaml>プレースホルダーに適切な値を指定します。
+4. イングレス・リソースを作成するには、コマンド行ウィンドウで、次のコマンドを実行します。 `<path-to-nginx-ingress-yaml>`プレースホルダーに適切な値を指定します。
     ```
     kubectl create -f <path-to-nginx-ingress-yaml>
     ```
@@ -2020,7 +2532,7 @@ Oracle Cloud InfrastructureへのOracle Application Container Cloud Serviceア�
     javaeeapp02-service   LoadBalancer   10.96.142.94    10.x.x.x          443:30830/TCP   1d
     ```
 
-TYPE列の下の値は、アプリケーションに従ってClusterIPまたはLoadBalancerになります。 EXTERNAL-IPの下の値は有効なIPアドレスにする必要があります。 異なる値がある場合、サービスで問題が発生しています。
+    TYPE列の下の値は、アプリケーションに従ってClusterIPまたはLoadBalancerになります。 EXTERNAL-IPの下の値は有効なIPアドレスにする必要があります。 異なる値がある場合、サービスで問題が発生しています。
 
 3. Kubernetesクラスタ内のpodsをフェッチします。
     ```
