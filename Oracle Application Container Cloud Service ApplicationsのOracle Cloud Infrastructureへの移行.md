@@ -1520,42 +1520,38 @@ Java Enterprise Edition (Java EE)アプリケーションにシステムまた�
     `<min-capacity>`      | 接続プールの最小容量。
     `<driver-properties>` | JDBCドライバ・プロパティのセミコロン区切りのリスト。
 
-    例:
-    ```
-    # ACCS environment variables(DO NOT REMOVE)
-    HOSTNAME=webapp01-service:443
-    APP_HOME=/u01/app
-    PORT=8080
-    ORA_PORT=8080
-    ORA_APP_NAME=webapp01
+例:
+ ```
+# ACCS environment variables(DO NOT REMOVE)
+HOSTNAME=employees-service:443
+APP_HOME=/u01/app
+PORT=8080
+ORA_PORT=8080
+ORA_APP_NAME=employees
 
-    # Application environment variables
-    APP_LIB_FOLDER=./lib 
+# Application environment variables
+APP_LIB_FOLDER=./lib 
 
-    # Service bindings environment variables
-    MYSQLCS_CONNECT_STRING=10.x.x.1:3306/mydb
-    MYSQLCS_MYSQL_PORT=3306
-    MYSQLCS_USER_PASSWORD=Password1
-    MYSQLCS_USER_NAME=TestUser
-    DBAAS_DEFAULT_CONNECT_DESCRIPTOR=10.x.x.x:1521/mydb
-    DBAAS_USER_NAME=TestUser
-    DBAAS_USER_PASSWORD=Password1
-    DBAAS_LISTENER_HOST_NAME=10.x.x.x
-    DBAAS_LISTENER_PORT=1521
-    DBAAS_DEFAULT_SID=ORCL
-    DBAAS_DEFAULT_SERVICE_NAME=mydb 
+# Service bindings environment variables
 
-    # System properties
-    # Only for "Java EE" runtime. Remove for other runtimes.
-    EXTRA_JAVA_PROPERTIES=-DconfigPath=/u01/app/conf/-DlogFile=/u01/app/logs/app.log 
+DBAAS_DEFAULT_CONNECT_DESCRIPTOR=146.56.2.52:1521/PDB1.jptest01.oraclecloud.internal
+DBAAS_USER_NAME=oracleusr2
+DBAAS_USER_PASSWORD=oracle
+DBAAS_LISTENER_HOST_NAME=146.56.2.52
+DBAAS_LISTENER_PORT=1521
+DBAAS_DEFAULT_SID=ORCL
+DBAAS_DEFAULT_SERVICE_NAME=PDB1.jptest01.oraclecloud.internal
 
-    # Service binding properties
-    # Only for "Java EE" runtime. Remove for other runtimes.
-    DBAAS_SERVICE_BINDING_NAME=dbaasDb
-    DBAAS_PROPERTIES=jndi-name:jdbc/dbcs|max-capacity:5|min-capacity:1|driver-properties:user=admin;database=test|
-    MYSQLCS_SERVICE_BINDING_NAME=mysqlDb
-    MYSQLCS_PROPERTIES=jndi-name:jdbc/mysqlcs|max-capacity:10|min-capacity:1|driver-properties:user=oci;database=app|
-    ```
+# System properties
+# Only for "Java EE" runtime. Remove for other runtimes.
+EXTRA_JAVA_PROPERTIES=-DconfigPath=/u01/app/conf/ -DlogFile=/u01/app/logs/app.log 
+
+# Service binding properties
+# Only for "Java EE" runtime. Remove for other runtimes.
+DBAAS_SERVICE_BINDING_NAME=DBCSDemo
+DBAAS_PROPERTIES=jndi-name:jdbc/testds|max-capacity:5|min-capacity:1|
+#DBAAS_PROPERTIESのところはuserとdatabaseは不要です
+ ```
 
 ### Kubernetes ClusterとOracle Cloud Services間の接続の有効化
 Oracle Application Container Cloud Serviceのアプリケーションがサービス・バインディングを使用して、他のOracle Cloudサービスとの通信を有効にする場合、アプリケーションの移行後にそれらのサービスと通信できるようにする必要があります。
@@ -1722,7 +1718,7 @@ Oracle Cloud Infrastructure Container Engine for Kubernetesにアプリケーシ
     ${port} | アプリケーションのパブリック・ポートを指定します。 SSLエンドポイントが必要な場合は443を入力し、それ以外の場合は80を入力します。 ワーカー・アプリケーションの場合、値は80です。
 
     例:
-
+    JAVASE
     ```
     kind: Service
     apiVersion: v1
@@ -1739,8 +1735,26 @@ Oracle Cloud Infrastructure Container Engine for Kubernetesにアプリケーシ
     ```
 
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\07.Create.the.Service.Configuration.File.png" width=80%></div>
-
-
+例：JAVAEE(SSLを設定する)
+```
+    kind: Service
+    apiVersion: v1
+    metadata:
+    name: "employees-service"
+    # The following section "annotations" should be removed if SSL endpoint
+    # is not required.
+    annotations:
+        service.beta.kubernetes.io/oci-load-balancer-ssl-ports: '443'
+        service.beta.kubernetes.io/oci-load-balancer-tls-secret: "employees-tls-certificate"
+    spec:
+    type: LoadBalancer
+    ports:
+    - port: 443
+        protocol: TCP
+        targetPort: 8080
+    selector:
+        app: "employees-selector"
+```
 ### Docker Registry SecretおよびSSL証明書を設定
 アプリケーションのデプロイ時にKubernetesがOracle Cloud Infrastructureレジストリからイメージをプルするには、Kubernetesシークレットを作成する必要があります。 アプリケーションがSSLエンドポイントを必要とする場合、アプリケーションの証明書および秘密キーを使用してTLSシークレットを作成する必要があります。
 
@@ -1763,9 +1777,9 @@ Oracle Cloud Infrastructure Container Engine for Kubernetesにアプリケーシ
     kubectl create secret tls
             <app-name>-tls-certificate --key <path-to-tls-key-file> --cert <path-to-tls-cert-file>
     ```
-    例:
+    例:(JAVAEE用SSL証明書)
     ```
-    $ kubectl create secret tls webapp01-tls-certificate --key /home/user1/kubernetes/tls.key --cert /home/user1/kubernetes/tls.crt
+    $ kubectl create secret tls employees-tls-certificate --key /home/user1/kubernetes/tls.key --cert /home/user1/kubernetes/tls.crt
     secret/webapp01-tls-certificate created
     ```
     >注意: `<path-to-tls-cert-file>`と`<path-to-tls-key-file>`は、公開証明書とキー・ファイルへの絶対パスです。
