@@ -119,9 +119,11 @@ Oracle Application Container Cloud Serviceアプリケーションの移行を�
     1. OCIRにログインするためにオブジェクト・ストレージ・ネームスペースを確認します。
 
         オブジェクト・ストレージ・ネームスペースは、OCIコンソール画面右上の人型のアイコンをクリックし、展開したプロファイルからテナンシ:<テナンシ名>から確認します。
+        
         <div align="center"><img src=".\images\prepare.01.png" width=80%></div>
 
     2. テナンシ情報のオブジェクト・ストレージ設定からオブジェクト・ストレージ・ネームスペースの値を確認します。OCIRへのアクセスする際に使用するため、値をテキストファイルにコピー＆ペーストするなどして控えておいてください。
+       
         <div align="center"><img src=".\images\prepare.02.png" width=80%></div>
 
         > 注意：オブジェクト・ストレージ・ネームスペースはテナントに対し1つ割り当てられます。リージョン内のすべてのコンパートメントにまたがり使用されます。任意の文字列が設定され、変更することはできません。
@@ -129,6 +131,7 @@ Oracle Application Container Cloud Serviceアプリケーションの移行を�
     3. OCIRにログインするためにユーザー名を確認します。
 
         ユーザー名は、OCIコンソール画面右上の人型のアイコンをクリックし、展開したプロファイルからユーザー名から確認します。
+      
         <div align="center"><img src=".\images\prepare.03.png" width=80%></div>
 
     4. ユーザーの詳細情報からユーザー名の値を確認します。OCIRへのアクセスする際に使用するため、値をテキストファイルにコピー＆ペーストするなどして控えておいてください。
@@ -161,16 +164,20 @@ Oracle Application Container Cloud Serviceアプリケーションの移行を�
     1. OCIRにログインするために認証トークンを作成します。
 
         OCIコンソール画面右上の人型のアイコンをクリックし、展開したプロファイルからユーザー設定をクリックします。
+       
         <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.01.png" width=80%></div>
 
     2. 左側の「認証トークン」をクリックして、トークンの作成画面に遷移します。そこで「トークンの生成」ボタンをクリックします。
+        
         <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.02.png" width=80%></div>
 
     3. トークンの生成ダイアログで、トークンの用途を説明する情報（任意の文字列）を入力し、「トークンの生成」ボタンをクリックします。
+       
         <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.03.png" width=80%></div>
 
     4. ダイアログに生成したトークンが表示されます。Copyという文字列をクリックするとクリップボードにこのトークンがコピーされます。そして閉じるをクリックします。
-        <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.04.png" width=80%></div>
+     
+       <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\04.Push.the.Docker.Image.04.png" width=80%></div>
 
         このトークンはあとの手順で利用するため、テキストエディタ等にペーストするなどして控えておいてください。
 
@@ -178,12 +185,16 @@ Oracle Application Container Cloud Serviceアプリケーションの移行を�
 
     1. 手動移行の場合、アプリケーション・アーカイブのコンテンツを抽出します。  
         例: 次はOracle Application Container Cloud Service用のアプリケーション・アーカイブ（JavaSE）  
+       
         <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\03.Build.the.Docker.Image.001.png" width=50%></div>  
+       
         zipファイルを解凍し、Oracle Cloud Infrastructure Container Engine for Kubernetes用のアプリケーション・アーカイブ（manifest.jsonとJarファイル）が得られます。
+       
         <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\03.Build.the.Docker.Image.002.png" width=50%></div> 
 
     2. 移行スクリプト・ツールを使用する場合、アプリケーション・アーカイブをオブジェクト・ストレージにアップロードして、オブジェクトの認証前リクエストを生成します。
         例: 次はOracle Application Container Cloud Service用のアプリケーション・アーカイブ（JavaSE） 
+     
         <div align="center"><img src=".\images\prepare.05.png" width=80%></div>
 
 
@@ -391,7 +402,7 @@ sshPublicKey | ワーカーノードのSSH公開キー・ファイルのパス�
 compartmentOCID-zone | DNSゾーンが存在するコンパートメントのOCID、または作成する必要があります。 | dnszoneセクションを指定した場合は必須です。
 dnszone-name | DNSゾーンの名前。 | dnszoneセクションを指定した場合は必須です。
 
-例:
+例:(JAVA)
 
 ```json
 {
@@ -424,6 +435,49 @@ dnszone-name | DNSゾーンの名前。 | dnszoneセクションを指定した�
 		"name": "taosheng.tk",
 		"compartmentOCID": "ocid1.compartment.oc1..aaaaaaaajgkfq6r4xflex534ouhycro3rxflwcnwp4aenvrvjygg62y2ar6a"
 	}
+}
+```
+例:(JAVAEE+SSL証明書)
+
+```json
+
+{
+        "account": {
+                "authToken": "6h.}82DrE4+k#sfDa)3<",
+                "profile": "DEFAULT",
+                "OCIConfig":"~/.oci/config"
+        },
+        "application": {
+                "name": "employees",
+                "runtime": "javaee",
+                "source": "https://objectstorage.us-ashburn-1.oraclecloud.com/p/gm9AuY1Hr-WgsQI6dgfqSzna0kbzL_WIa7bOJJFGZ_g/n/sehubjapacprod/b/ACCS2OKE/o/employees-app.war",
+                "deployment": "/home/opc/Downloads/accs-migration-1.0.0/deployment.json",
+        "ssl": {
+            "tlsKey": "/home/opc/Downloads/JAVAEE/key/server2.key",
+            "tlsCert": "/home/opc/Downloads/JAVAEE/key/server.crt"
+        },
+        "environment-variables":{
+            "DBAAS_DEFAULT_CONNECT_DESCRIPTOR": "146.56.2.52:1521/PDB1.jptest01.oraclecloud.internal",
+            "DBAAS_USER_NAME": "oracleusr2",
+            "DBAAS_USER_PASSWORD": "**************",
+            "DBAAS_LISTENER_HOST_NAME": "146.56.2.52",
+            "DBAAS_LISTENER_PORT": "1521",
+            "DBAAS_DEFAULT_SID": "ORCL",
+            "DBAAS_DEFAULT_SERVICE_NAME": "PDB1.jptest01.oraclecloud.internal",
+            "EXTRA_JAVA_PROPERTIES": "-DconfigPath=/u01/app/conf/ -DlogFile=/u01/app/logs/app.log",
+            "DBAAS_SERVICE_BINDING_NAME": "DBCSDemo",
+            "DBAAS_PROPERTIES": "jndi-name:jdbc/testds|max-capacity:5|min-capacity:1|"
+        }
+        },
+        "cluster": {
+                "compartmentOCID": "ocid1.compartment.oc1..aaaaaaaajgkfq6r4xflex534ouhycro3rxflwcnwp4aenvrvjygg62y2ar6a",
+                "name": "employees",
+                "sshPublicKey": "/home/opc/Downloads/accs-migration-1.0.0/public.pub"
+        },
+        "dnszone": {
+                "name": "taosheng.tk",
+                "compartmentOCID": "ocid1.compartment.oc1..aaaaaaaajgkfq6r4xflex534ouhycro3rxflwcnwp4aenvrvjygg62y2ar6a"
+        }
 }
 ```
 
@@ -796,9 +850,13 @@ Oracle Cloud Infrastructureコンソールを使用して、新しいKubernetes�
    * 公開SSHキー: (オプション)ノード・プールの各ノードへのSSHアクセスに使用するキー・ペアの公開キーを入力します。 公開キーは、クラスタ内のすべてのワーカー・ノードにインストールされます。 公開SSHキーを指定しない場合は、Oracle Cloud Infrastructure Container Engine for Kubernetesによって提供されます。 ただし、対応する秘密キーがないため、ワーカー・ノードへのSSHアクセス権を持つことはできません。
 
 4. 作成をクリックします。
+
 <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\01.Create.a.Kubernetes.Cluster.03.png" width=80%></div>
+
 <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\01.Create.a.Kubernetes.Cluster.04.png" width=80%></div>
+
 クラスタの作成には数分かかることがあります。 クラスタが作成されたあと、そのステータスはアクティブに変わります。
+
 <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\01.Create.a.Kubernetes.Cluster.05.png" width=80%></div>
 
 ### Kubectlの構成
@@ -808,9 +866,11 @@ kubectlを使用してクラスタにアクセスできるように、kubeconfig
 
 
 1. 作成したクラスタのページで「Kubeconfigへのアクセス」をクリックします。
+
 <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\02.Configure.Kubectl.01.png" width=80%></div>
 
 2. 「Kubeconfigへのアクセス方法」ダイアログ・ボックスに表示された手順に従います。
+
 <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\02.Configure.Kubectl.02.png" width=80%></div>
 
 3. kubectlを使用してクラスタにアクセスできることを確認します。
@@ -1430,6 +1490,7 @@ Oracle Application Container Cloud Serviceアプリケーションに必要な�
 
 アプリケーションの環境変数を移行するには:
 1. アプリケーションで1つ以上のサービス・バインディングが構成されている場合は、各サービス・バインディングの環境変数を検索します。 Oracle Application Container Cloud Serviceコンソールから、アプリケーション・デプロイメントを選択し、「環境変数」セクションのサービス・バインディング変数を識別します。
+
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\05.Set.up.the.Environment.Variables.01.png" width=80%></div>
 
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\05.Set.up.the.Environment.Variables.02.png" width=80%></div>
@@ -1735,6 +1796,7 @@ Oracle Cloud Infrastructure Container Engine for Kubernetesにアプリケーシ
     ```
 
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\07.Create.the.Service.Configuration.File.png" width=80%></div>
+
 例：JAVAEE(SSLを設定する)
 ```
     kind: Service
@@ -1843,16 +1905,23 @@ deployment.yamlファイルおよびservice.yamlファイルを使用して、�
 すでにDNSゾーンを作成している場合、次のステップは必要ありません。
 
 1. Oracle Cloud Infrastructureコンソールから、ナビゲーション・メニューを開きます。 「コア・インフラストラクチャ」の下で「ネットワーキング」に移動し、「DNSゾーン管理」をクリックします。
+
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.01.png" width=80%></div>
 
 2. 「ゾーンの作成」をクリックします。
+
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.02.png" width=80%></div>
+
 3. 「ゾーン名」を入力し、他のフィールドのデフォルト値をそのまま使用します。「送信」をクリックします
+
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.03.png" width=80%></div>
+
     >注意: DNSゾーンのDNSレコードをホストするネーム・サーバーのリストが表示されます。
+
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.04.png" width=80%></div>
 
 4. 公開DNSホスティング・プロバイダ・サービスにネーム・サーバーを追加してください。
+
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.04.01.png" width=80%></div>
 
 #### DNSレコードの追加
@@ -1863,11 +1932,16 @@ DNSゾーンを作成したら、DNSレコードを追加して、サブドメ�
     2. 名前: アプリケーション名を入力します。
     2. TTL: 適当な数字を入力します。
     3. アドレス: アプリケーションのパブリックIPアドレスを入力します。
+
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.05.png" width=80%></div>
+
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.06.png" width=80%></div>
+
 2. 「送信」をクリックします。
 3. 「変更の公開」をクリックします。
+
     <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\10.Set.up.a.Custom.URL.07.png" width=80%></div>
+    
 4. アプリケーションのカスタムURLは、次のフォームを備えています: `http[s]://<name>.<zone-name>[:<port>]/`。 たとえば、レコードの名前にwebapp01を入力し、ゾーン名がexample.comの場合、HTTPS URLは<https://webapp01.example.com>になります。
 
 ### イングレス・コントローラを設置
@@ -2683,7 +2757,13 @@ Oracle Cloud Infrastructure ClassicからOracle Cloud InfrastructureへOracle Ap
 
 アプリケーションのSSLエンドポイントを有効化した場合は、webブラウザを使用してSSL証明書を表示します。 SSL証明書が、Kubernetesデプロイメント構成で指定したものと同じであることを確認してください。
 
++ JAVA
+
 <div align="center"><img src=".\images\Migrate.Your.Applications.Manually\14.Use.a.web.browser.png" width=80%></div>
+
++ JavaEE
+
+<div align="center"><img src=".\images\tao-Manually\1.PNG" width=80%></div>
 
 ---
 ## Oracle Cloud Infrastructure ClassicでのInfrastructure and Platformリソースのクリーンアップ
