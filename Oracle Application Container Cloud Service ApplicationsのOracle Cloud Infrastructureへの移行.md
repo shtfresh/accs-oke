@@ -570,8 +570,10 @@ Java EEアプリケーションで1つ以上のJNDIサービス・バインデ�
     "<service-type>_SERVICE_BINDING_NAME": "<service-name>",
     ```
     説明:
-    * <service-type>はサービス・タイプです。 たとえば、DBAAS, MYSQLCSなどです。
-    * <service-name>は、サービスの名前です。
+    
+    * service-type はサービス・タイプです。 たとえば、DBAAS, MYSQLCSなどです。
+    * service-nameは、サービスの名前です。
+    
     例:
     ```
     "DBAAS_SERVICE_BINDING_NAME": "testDb"
@@ -583,11 +585,11 @@ Java EEアプリケーションで1つ以上のJNDIサービス・バインデ�
     ```
     説明:
 
-    * <ocic-service-type>はサービス・タイプです。 たとえば、DBAAS, MYSQLCSなどです。
-    * <jndi-name>は、サービスのJNDI名です。 "jdbc/<value>".形式である必要があります。例: "jdbc/dbcs".
-    * <max-capacity>は、接続プールの最大容量です。
-    * <min-capacity>は、接続プールの最小容量です。
-    * <driver-properties>は、JDBCドライバに渡されるプロパティのセミコロン区切りリストです。
+    * ocic-service-type はサービス・タイプです。 たとえば、DBAAS, MYSQLCSなどです。
+    * jndi-nameは、サービスのJNDI名です。 "jdbc/value".形式である必要があります。例: "jdbc/dbcs".
+    * max-capacityは、接続プールの最大容量です。
+    * min-capacityは、接続プールの最小容量です。
+    * driver-propertiesは、JDBCドライバに渡されるプロパティのセミコロン区切りリストです。
 
 例:
 
@@ -781,11 +783,11 @@ The application data exists at location /home/opc/Downloads/accs-migration-1.0.0
 ```
 
 ### スクリプト・ログの取得
-スクリプト・ログの詳細を取得できます: $SCRIPT_ROOT_FOLDER/work/<app-name>/<action>/logs/accs-migration.log.
+スクリプト・ログの詳細を取得できます: $SCRIPT_ROOT_FOLDER/work/「app-name」/「action」/logs/accs-migration.log.
 
 説明:
 1. $SCRIPT_ROOT_FOLDERは移行スクリプト・ツール(app.py)のディレクトリです。
-2. `<app-name>`は、構成ファイルで指定したアプリケーション名です。
+2. `「app-name」`は、構成ファイルで指定したアプリケーション名です。
 例:
 ```
 [root@accs2oke accs-migration-1.0.0]# tail -10 /home/opc/Downloads/accs-migration-1.0.0/work/notice4/create/logs/accs-migration.log
